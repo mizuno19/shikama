@@ -21,6 +21,13 @@ header {
 header h1 {
     color: #fff;
     font-size: 1.2rem;
+    float: left;
+}
+
+nav ul li {
+    float: left;
+    list-style: none;
+    
 }
 
 section#main {

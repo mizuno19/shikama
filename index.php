@@ -20,21 +20,35 @@ $db_dsn = [
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
 
+$html = get_html($view_html);
+if (empty($html)) die('Error: 指定されたファイルが見つかりません');
 
-if (isset($_GET['SEND'])) {
-    $sql = "SELECT * FROM client;";
+if (isset($_GET)) {
+    $forms = array();
+    foreach ($_GET as $key => $value) {
+        $forms[$key] = $value;
+    }
+
+    $sql = "SELECT * FROM shikama.clients";
     $res = $dbo->query($sql);
     var_dump($res);
     echo "クエリ実行<br>";
+
+    echo $html;
+
 } else {
     // 表示用データの読込
-    $html = get_html($view_html);
-    if (empty($html)) die('Error: 指定されたファイルが見つかりません');
     echo $html;
 }
 
+
+
 $dbo = null;
 
+function insert_clients($forms) {
+    var_dump($forms);
+    
+}
 
 
 function get_html($file) {

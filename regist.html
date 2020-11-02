@@ -12,14 +12,37 @@
 <body>
 <div id="contents">
 <header>
-    <h1>顧客管理</h1>
+    <h1>登録</h1>
+    <nav>
+    <ul>
+        <li><a href="">変更</a></li>
+        <li><a href="">削除</a></li>
+        <li><a href="">印刷</a></li>
+    </ul>
+    </nav>
 </header>
 
 <section id="main">
 
 <form action="./" method="GET">
-    氏名：<input type="text" name=""><br>
-    <input type="submit" name="SEND" value="クエリ実行">
+    <fieldset>
+    <legend>顧客情報</legend>
+    <label>姓：<input type="text" name="SEI" size="10" maxlength="20"></label><br>
+    <label>名：<input type="text" name="MEI" size="10" maxlength="20"></label><br>
+    <label>セイ：<input type="text" name="KANASEI" size="10" maxlength="40"></label><br>
+    <label>メイ：<input type="text" name="KANAMEI" size="10" maxlength="40"></label><br>
+    <label>好み：<textarea rows="3" cols="35" name="eats"></textarea></label><br>
+    <label>生年月日：<input type="date" name="BARTHDAY01" size="10">
+    　続柄：<input type="text" name="RBARTHDAY01" size="5"></label><br>
+    ※＋で追加<br>
+    </fieldset>
+    <fieldset>
+    <legend>来店情報</legend>
+    <label>人数：<input type="text" name="NUMBER" size="3">人</label><br>
+    <label>続柄：<input type="text" name="RELATION" size="10"></label><br>
+    <label>食事内容：<textarea rows="3" cols="35"></textarea></label><br>
+    </fieldset>
+    <input type="submit" name="SEND" value="登　録">
 </form>
 
 </section>
