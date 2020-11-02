@@ -1,0 +1,44 @@
+drop table clients;
+drop table phone_numbers;
+drop table phone_class;
+drop table birthdays;
+drop table comming;
+
+-- 顧客テーブル
+CREATE TABLE IF NOT EXISTS clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    kana VARCHAR(100) NOT NULL,
+    info TEXT,
+    INDEX id_index(id));
+
+-- 連絡先区分
+CREATE TABLE IF NOT EXISTS phone_class (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(10) NOT NULL,
+    INDEX id_index(id));
+
+-- 電話番号テーブル
+CREATE TABLE IF NOT EXISTS phone_numbers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT NOT NULL REFERENCES clients(id),
+    phone_number VARCHAR(12) NOT NULL,
+    class_id INT REFERENCES phone_class(id));
+
+-- 生年月日テーブル
+CREATE TABLE IF NOT EXISTS birthdays (
+    id INT AUTO_INCREMENT,
+    client_id INT NOT NULL REFERENCES clients(id),
+    birthday DATE NOT NULL,
+    relation VARCHAR(100) NOT NULL,
+    PRIMARY KEY(id, client_id));
+
+-- 来店記録テーブル
+CREATE TABLE IF NOT EXISTS comming (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT REFERENCES clients(id),
+    day TIMESTAMP,
+    number INT,
+    relation VARCHAR(255),
+    eats TEXT,
+    INDEX id_index(id));
