@@ -27,20 +27,24 @@
 <form action="./" method="GET">
     <fieldset>
     <legend>顧客情報</legend>
-    <label>姓：<input type="text" name="SEI" size="10" maxlength="20"></label><br>
-    <label>名：<input type="text" name="MEI" size="10" maxlength="20"></label><br>
-    <label>セイ：<input type="text" name="KANASEI" size="10" maxlength="40"></label><br>
-    <label>メイ：<input type="text" name="KANAMEI" size="10" maxlength="40"></label><br>
-    <label>好み：<textarea rows="3" cols="35" name="eats"></textarea></label><br>
-    <label>生年月日：<input type="date" name="BARTHDAY01" size="10">
-    　続柄：<input type="text" name="RBARTHDAY01" size="5"></label><br>
+    <label>姓：<input value="船橋" type="text" name="SEI" size="10" maxlength="20"></label><br>
+    <label>名：<input value="太郎" type="text" name="MEI" size="10" maxlength="20"></label><br>
+    <label>セイ：<input value="フナバシ" type="text" name="KANASEI" size="10" maxlength="40"></label><br>
+    <label>メイ：<input value="タロウ" type="text" name="KANAMEI" size="10" maxlength="40"></label><br>
+    <label>好み：<textarea rows="3" cols="35" name="LIKE">好みのデータ</textarea></label><br>
+    <label>生年月日：<input value="1979/01/01" type="text" name="BARTHDAY[]" size="10">
+    　続柄：<input value="本人" type="text" name="RBARTHDAY[]" size="5"></label><br>
+    <label>生年月日：<input value="1985/02/01" type="text" name="BARTHDAY[]" size="10">
+    　続柄：<input value="妻" type="text" name="RBARTHDAY[]" size="5"></label><br>
+    <label>生年月日：<input value="2000/03/01" type="text" name="BARTHDAY[]" size="10">
+    　続柄：<input value="子" type="text" name="RBARTHDAY[]" size="5"></label><br>
     ※＋で追加<br>
     </fieldset>
     <fieldset>
     <legend>来店情報</legend>
-    <label>人数：<input type="text" name="NUMBER" size="3">人</label><br>
-    <label>続柄：<input type="text" name="RELATION" size="10"></label><br>
-    <label>食事内容：<textarea rows="3" cols="35"></textarea></label><br>
+    <label>人数：<input value="3" type="text" name="NUMBER" size="3">人</label><br>
+    <label>続柄：<input value="家族" type="text" name="RELATION" size="10"></label><br>
+    <label>食事内容：<textarea rows="3" cols="35" name="EATS">ふるふる</textarea></label><br>
     </fieldset>
     <input type="submit" name="SEND" value="登　録">
 </form>
