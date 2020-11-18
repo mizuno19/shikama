@@ -47,7 +47,7 @@ if (empty($res)) {
             echo "<div class=\"name\">${name}</div>";
             echo '</div>';
             echo '</label>';
-            echo '<div class="visit"><form action="" method="GET">';
+            echo '<div class="visit"><form action="visit.php" method="GET">';
             echo "<input type=\"hidden\" name=\"ID\" value=\"${id}\">";
             echo '<input type="submit" name="VISIT" value="来店情報登録">';
             echo '</form></div>';

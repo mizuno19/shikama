@@ -19,44 +19,57 @@ echo <<<"EOH"
 <hr>
 EOH;
 
-$n = 0;     // スキップ数
-$m = 20;    // 取得数
-$sql = "SELECT 顧客ID, 姓, 名, セイ, メイ FROM 顧客
-    LIMIT ${m}";
-$res = execute($dbo, $sql);
+// submitボタンが押されて遷移してきたわけでなければトップへ
+if (!isset($_GET['VISIT'])) {
+    header('Location: /');
+    exit;
+}
 
-
-if (empty($res)) {
-    echo "<p>テーブルからデータを読み込めませんでした。</p>";
+// 顧客IDのチェック
+if (isset($_GET['ID'])) {
+    $id = $_GET['ID'];
 } else {
-    $db_data = $res->fetchAll(PDO::FETCH_ASSOC);
-    if (empty($db_data)) {
-        echo "<p>登録されているデータはありません。</p>";
+    // 顧客IDが送られてきてないのはおかしいのでトップへ
+    header('Location: /');
+    exit;
+}
+
+// 選択された顧客情報を取得
+$sql = "SELECT 顧客ID, 姓, 名, セイ, メイ, 備考 FROM 顧客 WHERE 顧客ID = :id";
+$stmt = $dbo->prepare($sql);
+$stmt->bindValue(':id', $id);
+$stmt->execute();
+$res = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$res) {
+    echo "<p>データが取得できていません。</p>";
+} else {
+    if (!isset($_POST['SEND'])) {
+        $date = date('Y-m-d H:i:s');
+        echo '<p>' . $res['セイ'] . '　' . $res['メイ'] . '</p>';
+        echo '<p>' . $res['姓'] . '　' . $res['名'] . '様</p>';
+        echo '<form action="" method="POST">';
+        echo "<input type=\"hidden\" name=\"ID\" value=\"${id}\">";
+        echo "<p>来店日時：";
+        echo "<input type=\"text\" name=\"DATE\" value=\"${date}\">";
+        echo "</p>";
+        echo "<p>人数：";
+        echo "<input type=\"text\" name=\"NUMBER\" value=\"\" size=\"3\" maxlength=\"2\">";
+        echo "</p>";
+        echo "<p>続柄(?):";
+        echo "<input type=\"text\" name=\"RELATION\" value=\"\" size=\"10\" maxlength=\"20\">";
+        echo "</p>";
+        echo '<p>';
+        echo '<input type="submit" name="SEND" value="登録">';
+        echo '</p>';
+        echo '</form>';
     } else {
-        echo '<div class="client_list">';
-        $cnt = $n;
-        foreach ($db_data as $row) {
-            $id = $row['顧客ID'];
-            $name = $row['姓'] . "　" . $row['名'];
-            $kana = $row['セイ'] . "　" . $row['メイ'];
-            echo "<div class=\"client\"><label id=\"${cnt}\">";
-            echo "<div class=\"id\"><input type=\"checkbox\" name=\"id[]\" value=\"${id}\"></div>";
-            echo "<div class=\"no\">${cnt}</div>";
-            echo '<div class="name_box">';
-            echo "<div class=\"kana\">${kana}</div>";
-            echo "<div class=\"name\">${name}</div>";
-            echo '</div>';
-            echo '</label>';
-            echo '<div class="visit"><form action="" method="GET">';
-            echo "<input type=\"hidden\" name=\"ID\" value=\"${id}\">";
-            echo '<input type="submit" name="VISIT" value="来店情報登録">';
-            echo '</form></div>';
-            echo '</div>';
-            $cnt++;
-        }
-        echo '</div>';
+        
+        echo "登録処理<br>";
+        echo '<a href="/">トップへ</a>';
     }
 }
+
 
 echo <<<"EOH"
 </body>
