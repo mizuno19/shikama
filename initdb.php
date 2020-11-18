@@ -97,6 +97,38 @@ $sql = "insert into 生年月日 values
     , ('2011121', 2, '1980-04-28', '妻');";
 execute($dbo, $sql, true);
 
+$sql = "insert into 顧客 values
+    ('2011131', '船橋', '太郎', 'フナバシ', 'タロウ', '好きなもの：おかめ納豆　嫌いなもの：ピーマン');";
+execute($dbo, $sql, true);
+$sql = "insert into 電話番号 values
+    ('2011131', '1', '08022223333');";
+execute($dbo, $sql, true);
+$sql = "insert into 生年月日 values
+      ('2011131', 1, '1978-01-01', '本人');";
+execute($dbo, $sql, true);
+
+$sql = "insert into 顧客 values
+    ('2011151', '津田', '沼夫', 'ツダ', 'ヌマオ', '好きなもの：ナス');";
+execute($dbo, $sql, true);
+execute($dbo, $sql, true);
+$sql = "insert into 生年月日 values
+        ('2011151', 1, '1978-01-01', '本人')
+      , ('2011151', 2, '1980-07-01', '友人')
+      , ('2011151', 3, '1986-03-05', '友人')
+      , ('2011151', 4, '1986-10-05', '友人');";
+execute($dbo, $sql, true);
+
+$sql = "insert into 顧客 values
+    ('2011171', '稲毛', '浜', 'イナゲ', 'ハマ', 'アレルギー：乳製品');";
+execute($dbo, $sql, true);
+$sql = "insert into 電話番号 values
+      ('2011171', '1', '1234506789')
+    , ('2011171', '2', '9876543210')
+    , ('2011171', '3', '08033334444');";
+execute($dbo, $sql, true);
+
+
+
 echo <<<"EOH"
 </body>
 </html>
