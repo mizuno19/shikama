@@ -1,39 +1,53 @@
 @charset "utf-8";
 
-@media all {
-    .client_list {
-        position: relative;
-        width: 100%;
-    }
+.client_list {
+    position: relative;
+    width: 100%;
+}
 
-    .client {
-        position: relative;
-        border: #9f9f9f solid;
-        border-width: 0 0 1px 0;
-        width: 100%;
-    }
+.client {
+    position: relative;
+    border: #9f9f9f solid;
+    border-width: 0 0 1px 0;
+    overflow: hidden;
+    width: 100%;
+} 
 
-    .client .no {
-        width: 32px;
-        height: 100%;
-        font-size: 1.2rem;
-        float: left;
-        text-align: center;
-    }
+.client .no {
+    width: 32px;
+    height: 100%;
+    font-size: 1.2rem;
+    float: left;
+    text-align: center;
+}
 
-    .client .id {
-        width: 32px;
-        height: 100%;
-        text-align: center;
-        vertical-align: middle;
-        float: left;
-    }
+.client .id {
+    width: 32px;
+    height: 100%;
+    float: left;
+    text-align: center;
+}
 
-    .client .kana {
-        font-size: 0.8rem;
-    }
+.client .name_box {
+    float: left;
+    height: 100%;
+}
 
-    .client .name {
-        font-size: 1.2rem;
-    }
+.client .kana {
+    font-size: 0.8rem;
+}
+
+.client .name {
+    font-size: 1.2rem;
+}
+
+.client .visit, .client form {
+    margin-left: 12px;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.client .visit input[type=submit] {
+    width: 180px;
+    font-size: 1.2rem;
 }

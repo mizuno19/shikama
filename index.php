@@ -42,9 +42,16 @@ if (empty($res)) {
             echo "<div class=\"client\"><label id=\"${cnt}\">";
             echo "<div class=\"id\"><input type=\"checkbox\" name=\"id[]\" value=\"${id}\"></div>";
             echo "<div class=\"no\">${cnt}</div>";
+            echo '<div class="name_box">';
             echo "<div class=\"kana\">${kana}</div>";
             echo "<div class=\"name\">${name}</div>";
-            echo '</label></div>';
+            echo '</div>';
+            echo '</label>';
+            echo '<div class="visit"><form action="" method="GET">';
+            echo "<input type=\"hidden\" name=\"ID\" value=\"${id}\">";
+            echo '<input type="submit" name="VISIT" value="来店情報登録">';
+            echo '</form></div>';
+            echo '</div>';
             $cnt++;
         }
         echo '</div>';
