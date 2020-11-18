@@ -1,8 +1,39 @@
 @charset "utf-8";
 
+#header_box {
+    width: 100%;
+    overflow: hidden;
+}
+
+#search {
+    float: left;
+}
+
+#search input[type="text"] {
+    margin: 8px;
+    font-size: 1.2rem;
+}
+
+#search input[type="submit"] {
+    width: 6rem;
+    font-size: 1.2rem;
+}
+
+#register {
+    display: inline;
+    margin-left: 2rem;
+}
+
+#register a {
+    vertical-align: middle;
+    font-size: 1.2rem;
+}
+
+
 .client_list {
     position: relative;
     width: 100%;
+    clear: both;
 }
 
 .client {
@@ -14,10 +45,11 @@
 } 
 
 .client .no {
-    width: 32px;
-    height: 100%;
-    font-size: 1.2rem;
     float: left;
+    width: 32px;
+    top: 50%;
+    margin-top: 1em;
+    font-size: 1.2rem;
     text-align: center;
 }
 

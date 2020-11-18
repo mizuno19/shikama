@@ -2,7 +2,6 @@
 require_once 'config.php';
 require_once 'lib/dblib.php';
 
-
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
 
@@ -17,12 +16,36 @@ echo <<<"EOH"
 <body>
 <h1>顧客情報一覧</h1>
 <hr>
+<div id="header_box">
+    <form action="" method="GET">
+    <div id="search">
+        <input type="text" name="SEARCH" value="">
+        <input type="submit" name="SEARCH_SEND" value="検索">
+        <div id="register">
+            <a href="register.php">新規顧客登録</a>
+        </div>
+    </div>
+    </form>
+</div>
+<hr>
 EOH;
 
 $n = 0;     // スキップ数
 $m = 20;    // 取得数
-$sql = "SELECT 顧客ID, 姓, 名, セイ, メイ FROM 顧客
-    LIMIT ${m}";
+if (isset($_GET['SEARCH_SEND'])) {
+    if (isset($_GET['SEARCH']) && !empty($_GET['SEARCH'])) {
+        $search_word = $_GET['SEARCH'];
+        str_replace($search_word, "||")
+
+        $where = "WHERE ";
+        $where .= "姓 LIKE '%" . $word . "%' ";
+        $where .= "名 LIKE '%" . $word . "%' ";
+        $where .= "セイ LIKE '%" . $word . "%' ";
+        $where .= "メイ LIKE '%" . $word . "%'";
+    }
+}
+
+$sql = "SELECT 顧客ID, 姓, 名, セイ, メイ FROM 顧客 ${where} LIMIT ${m}";
 $res = execute($dbo, $sql);
 
 
