@@ -19,7 +19,7 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
         <?php 
         $n = 0;     //印刷予定枚数
         $i = 0;     //印刷実行数
-        $id = '2011131';
+        $id = $_GET['ID'];
         $sql = "SELECT 顧客.顧客ID, 顧客.姓, 顧客.名, 顧客.セイ, 顧客.メイ, 顧客.備考,来店記録.日時,来店記録.メニュー FROM 顧客 left join 来店記録 on 顧客.顧客ID=来店記録.顧客ID where 顧客.顧客ID='${id}' order by 来店記録.日時 desc";
         $res = execute($dbo, $sql); 
         $db_data = $res->fetchAll(PDO::FETCH_ASSOC);

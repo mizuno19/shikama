@@ -91,7 +91,7 @@ if (empty($res)) {
             <div class="no"><?= ($cnt + 1) ?></div>
             <div class="name_box">
             <div class="kana"><?= $kana ?></div>
-            <div class="name"><?= $name ?>:<?= $id ?></div>
+            <div class="name"><a href="print.php?ID=<?= $id ?>"><?= $name ?></a></div>
             </div>
             </label>
             <div class="visit"><form action="visit.php" method="GET">
