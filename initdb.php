@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once 'lib/dblib.php';
 
+// データベースへ接続
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
 

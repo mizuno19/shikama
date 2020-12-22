@@ -4,20 +4,25 @@ require_once 'lib/dblib.php';
 
 $view_html = "regist.html";
 
+// データベースへ接続
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
-
 
 $html = get_html($view_html);
 if (empty($html)) die('Error: 指定されたファイルが見つかりません');
 
-var_dump($_GET);
-if (isset($_GET['SEND'])) {
-    $err_flag = false;
-    $forms = array();
-    foreach ($_GET as $key => $value) {
+# POSTでデータが送信されていれば登録処理
+if (isset($_POST['SEND'])) {
+    $err_flag = false;      // エラーフラグ
+    $forms = array();       // 空の配列を準備
+    // 列名をキーにして連想配列を作成
+    foreach ($_POST as $key => $value) {
         $forms[$key] = $value;
     }
+    // 確認用
+    echo "<hr>";
+    var_dump($forms);
+    echo "<hr>";
 
     if (!empty($forms['SEI'])) {
         $sei = $forms['SEI'];
@@ -105,6 +110,7 @@ if (isset($_GET['SEND'])) {
 }
 
 $dbo = null;
+
 
 function insert_clients($db, $forms) {
     echo "<h1>インサート処理</h1>";
