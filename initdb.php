@@ -62,17 +62,19 @@ $sql = "create table 生年月日(
     登録ID int not null,
     生年月日 date ,
     続柄 varchar(10),
-    primary key(顧客ID,登録ID),
+    primary key (顧客ID,登録ID),
     foreign key (顧客ID) references 顧客(顧客ID));";
 execute($dbo, $sql, true);
 
 $sql = "create table 来店記録(
+    来店ID int auto_increment,
     顧客ID char(7) not null,
     日時 timestamp not null,
     人数 int,
     続柄 varchar(10),
     メニュー text,
-    primary key(顧客ID));";
+    primary key (来店ID),
+    foreign key (顧客ID) references 顧客(顧客ID));";
 execute($dbo, $sql, true);
 
 
@@ -105,12 +107,11 @@ $sql = "insert into 電話番号 values
     ('2011131', '1', '08022223333');";
 execute($dbo, $sql, true);
 $sql = "insert into 生年月日 values
-      ('2011131', 1, '1978-01-01', '本人');";
+    ('2011131', 1, '1978-01-01', '本人');";
 execute($dbo, $sql, true);
 
 $sql = "insert into 顧客 values
     ('2011151', '津田', '沼夫', 'ツダ', 'ヌマオ', '好きなもの：ナス');";
-execute($dbo, $sql, true);
 execute($dbo, $sql, true);
 $sql = "insert into 生年月日 values
         ('2011151', 1, '1978-01-01', '本人')
@@ -128,7 +129,11 @@ $sql = "insert into 電話番号 values
     , ('2011171', '3', '08033334444');";
 execute($dbo, $sql, true);
 
-
+$sql = "insert into 来店記録 values
+    (null, '2011131', '2020-11-01', 1, '本人', '白海老目光フリット、アワビ冬瓜'),
+    (null, '2011131', '2020-11-07', 2, '奥様', 'ラスプリ、メイン、カネロニフォワ');
+    ";
+execute($dbo, $sql, true);
 
 echo <<<"EOH"
 </body>
