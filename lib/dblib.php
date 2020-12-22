@@ -1,5 +1,6 @@
 <?php
 
+// データベースへ接続しPDOインスタンスを返す
 function dbconnect($dsn) {
     $pdo = null;
     try {
@@ -10,7 +11,8 @@ function dbconnect($dsn) {
     return $pdo;
 }
 
-
+// クエリ実行
+// $flagにtrueを指定するとエラーメッセージを画面に表示する
 function execute($dbo, $sql, $flag=false) {
     try {
         $res = $dbo->query($sql);
@@ -28,6 +30,7 @@ function execute($dbo, $sql, $flag=false) {
     }
 }
 
+// テーブル削除
 function drop_table($dbo, $table) {
     $sql = "DROP TABLE ${table};";
     try {
@@ -38,7 +41,6 @@ function drop_table($dbo, $table) {
         echo "&nbsp;&nbsp;(" . $e->getMessage() . ")</p>";
     }
 }
-
 
 
 1;

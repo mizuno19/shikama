@@ -16,13 +16,18 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
     <link rel="stylesheet" href="css/print.css" type="text/css">
 </head>
 <body>
+<?php 
+$n = 0;     // スキップ数
+$m = 0;    // 取得数
+$where = '';
+$sql = "SELECT 顧客ID, 姓, 名, セイ, メイ FROM 顧客 ${where} ${order} ${limit}";
+$res = execute($dbo, $sql); ?>
     <form>
-    <p>セイ<input type="text" name="surname"></p>
-    <p>メイ<input type="text" name="name"></p>
-    <p>姓　名<input type="text" name=""></p>
-    <p>来店日時<input type="text" name="prefe"></p>
-    <p>メニュー<input type="text" name="prefe"></p>
-    <p>好み・苦手なもの<input type="text" name="prefe"></p>
+    <p>セイ メイ:</p>
+    <p>姓 名:</p>
+    <p>来店日時:</p>
+    <p>メニュー:</p>
+    <p>好み・苦手なもの:</p>
     <input type="submit" value="印刷">
 </form>   
 </body>
