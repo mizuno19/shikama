@@ -29,10 +29,10 @@
     font-size: 1.2rem;
 }
 
-
 .client_list {
     position: relative;
     width: 100%;
+    height: 100%;
     clear: both;
 }
 
@@ -42,7 +42,7 @@
     border-width: 0 0 1px 0;
     overflow: hidden;
     width: 100%;
-} 
+}
 
 .client .no {
     float: left;
@@ -58,6 +58,7 @@
     height: 100%;
     float: left;
     text-align: center;
+    background-color: #00f;
 }
 
 .client .name_box {
