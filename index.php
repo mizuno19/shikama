@@ -32,16 +32,17 @@ EOH;
 
 $n = 0;     // スキップ数
 $m = 20;    // 取得数
+$where = "";
 if (isset($_GET['SEARCH_SEND'])) {
     if (isset($_GET['SEARCH']) && !empty($_GET['SEARCH'])) {
         $search_word = $_GET['SEARCH'];
-        str_replace($search_word, "||")
+        $word = $search_word; //str_replace($search_word, "||");
 
         $where = "WHERE ";
         $where .= "姓 LIKE '%" . $word . "%' ";
-        $where .= "名 LIKE '%" . $word . "%' ";
-        $where .= "セイ LIKE '%" . $word . "%' ";
-        $where .= "メイ LIKE '%" . $word . "%'";
+        $where .= "or 名 LIKE '%" . $word . "%' ";
+        $where .= "or セイ LIKE '%" . $word . "%' ";
+        $where .= "or メイ LIKE '%" . $word . "%'";
     }
 }
 
@@ -53,6 +54,7 @@ if (empty($res)) {
     echo "<p>テーブルからデータを読み込めませんでした。</p>";
 } else {
     $db_data = $res->fetchAll(PDO::FETCH_ASSOC);
+    var_dump($db_data);
     if (empty($db_data)) {
         echo "<p>登録されているデータはありません。</p>";
     } else {
