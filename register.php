@@ -4,6 +4,7 @@ require_once 'lib/dblib.php';
 
 function create_id($dbo) {
     // 生成した顧客IDに現在の日付を設定
+    date_default_timezone_set('Asia/Tokyo');
     $id = date("ymd");
 
     // 現在登録されている同日の顧客IDのうち最大値を取得
@@ -128,57 +129,65 @@ if (isset($_POST['SEND'])) {
 
 
 function insert_clients($dbo, $forms) {
-    // トランザクション処理開始
-    // $dbo->query("BEGIN");
 
-    // 顧客テーブルへ情報を追加する
-    $kokyaku_sql = "INSERT INTO 顧客 VALUES (:id, :sei, :mei, :k_sei, :k_mei, :like)";
-    $kokyaku = $dbo->prepare($kokyaku_sql);
-    $kokyaku->bindParam(":id", $forms['ID']);
-    $kokyaku->bindParam(":sei", $forms['SEI']);
-    $kokyaku->bindParam(":mei", $forms['MEI']);
-    $kokyaku->bindParam(":k_sei", $forms['KANASEI']);
-    $kokyaku->bindParam(":k_mei", $forms['KANAMEI']);
-    $kokyaku->bindParam(":like", $forms['LIKE']);
-    $res = $kokyaku->execute();
+    try {
+        // トランザクション処理開始
+        $dbo->beginTransaction();
 
-    // 電話番号テーブルへ情報を追加する
-    $phone_sql = "INSERT INTO 電話番号 VALUES(:id, :cid, :phone)";
-    $phone = $dbo->prepare($phone_sql);
-    $phone->bindParam(":id", $forms['ID']);
-    $phone->bindParam(":cid", $forms['PHONECLASS']);
-    $phone->bindParam(":phone", $forms['PHONE']);
-    $res = $phone->execute();
+        // 顧客テーブルへ情報を追加する
+        $kokyaku_sql = "INSERT INTO 顧客 VALUES (:id, :sei, :mei, :k_sei, :k_mei, :like)";
+        $kokyaku = $dbo->prepare($kokyaku_sql);
+        $kokyaku->bindParam(":id", $forms['ID']);
+        $kokyaku->bindParam(":sei", $forms['SEI']);
+        $kokyaku->bindParam(":mei", $forms['MEI']);
+        $kokyaku->bindParam(":k_sei", $forms['KANASEI']);
+        $kokyaku->bindParam(":k_mei", $forms['KANAMEI']);
+        $kokyaku->bindParam(":like", $forms['LIKE']);
+        $res = $kokyaku->execute();
 
-    // 生年月日テーブルへ情報を追加する
-    if (count($forms['BIRTHDAY']) > 0) {
-        $birth_sql = "INSERT INTO 生年月日 VALUES (:id, :bid, :birthday, :rbirthday)";
-        $birth = $dbo->prepare($birth_sql);
-        $i = 1;
-        foreach ($forms['BIRTHDAY'] as $birthday) {
-            $birth->bindParam(":id", $forms['ID']);
-            $birth->bindParam(":bid", $i);
-            $birth->bindParam(":birthday", $birthday[0]);
-            $birth->bindParam(":rbirthday", $birthday[1]);
-            $res = $birth->execute();
-            $i++;
+        // 電話番号テーブルへ情報を追加する
+        $phone_sql = "INSERT INTO 電話番号 VALUES(:id, :cid, :phone)";
+        $phone = $dbo->prepare($phone_sql);
+        $phone->bindParam(":id", $forms['ID']);
+        $phone->bindParam(":cid", $forms['PHONECLASS']);
+        $phone->bindParam(":phone", $forms['PHONE']);
+        $res = $phone->execute();
+
+        // 生年月日テーブルへ情報を追加する
+        if (count($forms['BIRTHDAY']) > 0) {
+            $birth_sql = "INSERT INTO 生年月日 VALUES (:id, :bid, :birthday, :rbirthday)";
+            $birth = $dbo->prepare($birth_sql);
+            $i = 1;
+            foreach ($forms['BIRTHDAY'] as $birthday) {
+                $birth->bindParam(":id", $forms['ID']);
+                $birth->bindParam(":bid", $i);
+                $birth->bindParam(":birthday", $birthday[0]);
+                $birth->bindParam(":rbirthday", $birthday[1]);
+                $res = $birth->execute();
+                $i++;
+            }
         }
+
+        // 来店記録テーブルへ情報を追加する
+        $visit_sql = "INSERT INTO 来店記録 VALUES(null, :id, :date, :number, :relation, :eats)";
+        $visit = $dbo->prepare($visit_sql);
+        $visit->bindParam(":id", $forms['ID']);
+        $date = date("Y-m-d H:i:s");
+        $visit->bindParam(":date", $date);
+        $visit->bindParam(":number", $forms['NUMBER']);
+        $visit->bindParam(":relation", $forms['RELATION']);
+        $visit->bindParam(":eats", $forms['EATS']);
+        $res = $visit->execute();
+
+        // コミット
+        $dbo->commit();
+
+    } catch (PDOException $e) {
+        $dbo->rollBack();
+        $dbo = null;
+        echo $e->getMessage();
+        die();
     }
-
-    // 来店記録テーブルへ情報を追加する
-    $visit_sql = "INSERT INTO 来店記録 VALUES(null, :id, :date, :number, :relation, :eats)";
-    $visit = $dbo->prepare($visit_sql);
-    $visit->bindParam(":id", $forms['ID']);
-    $date = date("Y-m-d H:i:s");
-    $visit->bindParam(":date", $date);
-    $visit->bindParam(":number", $forms['NUMBER']);
-    $visit->bindParam(":relation", $forms['RELATION']);
-    $visit->bindParam(":eats", $forms['EATS']);
-    $res = $visit->execute();
-
-    // コミット
-    // $dbo->query("COMMIT");
-
 }
 ?>
 <!DOCTYPE html>
