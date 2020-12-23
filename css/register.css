@@ -1,4 +1,9 @@
+#birthday label {
+    display: block;
+}
+
 input[type="submit"] {
     width: 250px;
     font-size: 1.6em;
 }
+
