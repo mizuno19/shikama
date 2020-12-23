@@ -38,13 +38,27 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
             }else{
                 $n=3;
             }?>
-            <?php while($i<$n) {?>
+            <?php while($i<$n) {
+                $rem=str_replace(PHP_EOL,"<br>","   ".$db_data[0]["備考"]);
+                ?>
                 <div class="page">
-                    <p><?php echo $db_data[0]["セイ"]." ".$db_data[0]["メイ"] ?></p>
-                    <p><?php echo $db_data[0]["姓"]." ".$db_data[0]["名"] ?></p>
-                    <p><?php echo $db_data[0]["備考"] ?></p> <!-- // 改行処理があると良い？ -->   
-                    <p><?php echo $db_data[$i]["日時"] ?></p>
-                    <p><?php echo $db_data[$i]["メニュー"] ?></p>
+                    <div class="prev" id="a<?=$i?>">
+                    <hr>
+                        <div class="name">
+                        <p><?php echo $db_data[0]["セイ"]." ".$db_data[0]["メイ"] ?>　サマ</p>
+                        <p><?php echo $db_data[0]["姓"]." ".$db_data[0]["名"] ?>　様</p>
+                        </div>
+                    <hr>
+                    </div>
+                    <div class="rem">
+                    <p><?php echo $rem ?></p> <!-- // 改行処理があると良い？ -->  
+                    </div>
+                    <hr> 
+                    <div class="date">
+                    <p><?php echo substr($db_data[$i]["日時"],0,10) ?></p>
+                    <p><?php echo substr($db_data[$i]["日時"],11) ?></p>
+                    </div>
+                    <p class="menu"><?php echo $db_data[$i]["メニュー"] ?></p>
                 </div>
                 <?php $i++; }?>
                 <div  class="center"><input type="submit" value="印刷" class="noprint"></div>

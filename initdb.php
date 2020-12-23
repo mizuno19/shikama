@@ -101,7 +101,7 @@ $sql = "insert into 生年月日 values
 execute($dbo, $sql, true);
 
 $sql = "insert into 顧客 values
-    ('2011131', '船橋', '太郎', 'フナバシ', 'タロウ', '好きなもの：おかめ納豆　嫌いなもの：ピーマン');";
+    ('2011131', '船橋', '太郎', 'フナバシ', 'タロウ', '好きなもの：おかめ納豆".PHP_EOL."嫌いなもの：ピーマン');";
 execute($dbo, $sql, true);
 $sql = "insert into 電話番号 values
     ('2011131', '1', '08022223333');";
