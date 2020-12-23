@@ -141,7 +141,6 @@ function insert_clients($dbo, $forms) {
     $kokyaku->bindParam(":k_mei", $forms['KANAMEI']);
     $kokyaku->bindParam(":like", $forms['LIKE']);
     $res = $kokyaku->execute();
-    var_dump($res);
 
     // 電話番号テーブルへ情報を追加する
     $phone_sql = "INSERT INTO 電話番号 VALUES(:id, :cid, :phone)";
@@ -150,7 +149,6 @@ function insert_clients($dbo, $forms) {
     $phone->bindParam(":cid", $forms['PHONECLASS']);
     $phone->bindParam(":phone", $forms['PHONE']);
     $res = $phone->execute();
-    var_dump($res);
 
     // 生年月日テーブルへ情報を追加する
     if (count($forms['BIRTHDAY']) > 0) {
@@ -163,7 +161,6 @@ function insert_clients($dbo, $forms) {
             $birth->bindParam(":birthday", $birthday[0]);
             $birth->bindParam(":rbirthday", $birthday[1]);
             $res = $birth->execute();
-            var_dump($res);
             $i++;
         }
     }
@@ -173,13 +170,11 @@ function insert_clients($dbo, $forms) {
     $visit = $dbo->prepare($visit_sql);
     $visit->bindParam(":id", $forms['ID']);
     $date = date("Y-m-d H:i:s");
-    var_dump($date);
     $visit->bindParam(":date", $date);
     $visit->bindParam(":number", $forms['NUMBER']);
     $visit->bindParam(":relation", $forms['RELATION']);
     $visit->bindParam(":eats", $forms['EATS']);
     $res = $visit->execute();
-    var_dump($res);
 
     // コミット
     // $dbo->query("COMMIT");
