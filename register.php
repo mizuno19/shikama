@@ -2,6 +2,32 @@
 require_once 'config.php';
 require_once 'lib/dblib.php';
 
+function create_id($dbo) {
+    // 生成した顧客IDに現在の日付を設定
+    $id = date("ymd");
+
+    // 現在登録されている同日の顧客IDのうち最大値を取得
+    $sql = "SELECT MAX(顧客ID) AS 顧客ID FROM 顧客 WHERE 顧客ID LIKE '" . $id . "%'";
+    $res = execute($dbo, $sql);
+
+    // クエリ実行結果のチェック
+    if (!empty($res)) {
+        // 結果が空でなければデータを配列で取得
+        $max_id = ($res->fetchAll(PDO::FETCH_ASSOC))[0]["顧客ID"];
+        if (empty($max_id)) {
+            // IDの最大値がNULLならば、その日最初に登録する顧客のため末尾に1を追加する
+            $id .= "1";
+        } else {
+            // 最大値が存在する場合は、その最大値に+1をし文字列に変換する
+            $id = strval(intval($max_id) + 1);
+        }
+
+        return $id;
+    }
+
+    return null;
+}
+
 // データベースへ接続
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
@@ -15,50 +41,38 @@ if (isset($_POST['SEND'])) {
         $forms[$key] = $value;
     }
     // 確認用
-    echo "<hr>";
-    var_dump($forms);
-    echo "<hr>";
+    // echo "<hr>";
+    // var_dump($forms);
+    // echo "<hr>";
 
-    if (!empty($forms['SEI'])) {
-        $sei = $forms['SEI'];
-    } else {
-        $err_flag = true;
+    // 顧客IDの生成
+    $id = create_id($dbo);
+    if (empty($id)) {
+        die("<p>顧客IDの生成に失敗しました。</p>");
     }
-    if (!empty($forms['MEI'])) {
-        $name = $forms['MEI'];
-    } else {
+    $forms = array('ID' => $id) + $forms;
+
+    if (empty($forms['SEI']) || empty($forms['MEI'])) {
         $err_flag = true;
     }
 
-    if (!empty($forms['KANASEI']) && !empty($forms['KANAMEI'])) {
-        $kana = $forms['KANASEI'] . '　' . $forms['KANAMEI'];
-    } else {
+    if (empty($forms['KANASEI']) || empty($forms['KANAMEI'])) {
         $err_flag = true;
     }
-    if (!empty($forms['PHONE'])) {
-        $phone = $forms['PHONE'];
-        $phone_class = "";
-        if (!empty($forms['PHONECLASS'])) {
-            $phone_class = $forms['PHONECLASS'];
-        }
+
+    if (empty($forms['PHONE']) || empty($forms['PHONECLASS'])) {
+        $err_flag = true;
     }
-    if (!empty($forms['LIKE'])) {
-        $like = $forms['LIKE'];
-    }
-    if (!empty($forms['BIRTHDAY'])) {
-        // 1件の登録がある時はそれ以上の生年月日登録が無いかをチェック
-        // 仕様次第ではキーを続柄にして誕生日を値で持たせる
-        $barthday = array();
-        $i = 0;
-        foreach ($forms['BIRTHDAY'] as $value) {
-            $brelation = $forms['RBIRTHDAY'][$i];
-            $barthday += array($i => array($value, $brelation));
-            $i++;
-        }
-    }
-    echo "<hr>誕生日データ(可変長なので表示して確認)<br>";
-    var_dump($barthday);
-    echo "<hr>";
+    
+    // if (!empty($forms['BIRTHDAY'])) {
+    //     $birthday = array();
+    //     $i = 0;
+    //     foreach ($forms['BIRTHDAY'] as $value) {
+    //         $brelation = $forms['RBIRTHDAY'][$i];
+    //         $birthday += array($i => array($value, $brelation));
+    //         $i++;
+    //     }
+    // }
 
     // 来店情報
     // 人数
@@ -78,21 +92,27 @@ if (isset($_POST['SEND'])) {
 
     if ($err_flag) echo "入力項目にエラーがあります";
 
-    echo "<hr>変数内容確認<br>";
-    echo "name = $name<br>";
-    echo "kana = $kana<br>";
-    echo "phone = $phone($phone_class)<br>";
-    echo "like = $like<br>";
-    var_dump($barthday); echo "<br>";
-    echo "number = $number<br>";
-    echo "relation = $relation<br>";
-    echo "eats = $eats<br>";
-    echo "<hr>";
+
+    // echo "<hr>変数内容確認<br>";
+    // echo "name = $name<br>";
+    // echo "kana = $kana<br>";
+    // echo "phone = $phone($phone_class)<br>";
+    // echo "like = $like<br>";
+    // foreach ($birthday as $rows) {
+    //     foreach ($rows as $key => $value) {
+    //         echo "birthday = $key : $value<br>";
+    //     }
+    // }
+    // echo "number = $number<br>";
+    // echo "relation = $relation<br>";
+    // echo "eats = $eats<br>";
+    // echo "<hr>";
 
     // 一旦配列にする
-    $formdata = array($name, $kana, $like, $barthday, $number, $relation, $eats);
+    //$formdata = array($id, $sei, $mei, $k_sei, $k_mei, $like, $birthday, $number, $relation, $eats);
 
-    //insert_clients($dbo, $formdata);
+    // データベースへ登録
+    insert_clients($dbo, $forms);
     
     //$sql = "SELECT * FROM shikama.clients";
     //$res = $dbo->query($sql);
@@ -103,40 +123,60 @@ if (isset($_POST['SEND'])) {
 $dbo = null;
 
 
-function insert_clients($db, $forms) {
+function insert_clients($dbo, $forms) {
     echo "<h1>インサート処理</h1>";
     var_dump($forms);
+
+    // 顧客テーブルへ情報を追加するためのSQLの事前準備
+    $kokyaku_sql = "INSERT INTO 顧客 VALUES (:id, :sei, :mei, :k_sei, :k_mei, :like)";
+    $kokyaku = $dbo->prepare($kokyaku_sql);
+    $kokyaku->bindParam(":id", $forms['ID']);
+    $kokyaku->bindParam(":sei", $forms['SEI']);
+    $kokyaku->bindParam(":mei", $forms['MEI']);
+    $kokyaku->bindParam(":k_sei", $forms['KANASEI']);
+    $kokyaku->bindParam(":k_mei", $forms['KANAMEI']);
+    $kokyaku->bindParam(":like", $forms['LIKE']);
+
+    // 生年月日テーブルへ情報を追加するためのSQLの事前準備
+    var_dump(count($birthday));
+    if (count($birthday) > 0) {
+        $sql = "INSERT INTO 生年月日 VALUES ";
+        foreach ($birthday as $k => $v) {
+            echo "$k, $v<br>";
+        }
+    }
+
+    // $dbo->query("BEGIN;");
+    // $res = $kokyaku->execute();
+    // var_dump($res);
+
+
     // 先に名前で検索してIDを取得
-    $sql = "SELECT count(*) FROM shikama.clients
-        WHERE name LIKE :name";
-    $stmt = $db->prepare($sql);
-    var_dump($stmt);
-    $stmt->bindValue(':name', $forms[0]);
-    $stmt->execute();
-    $res = $stmt->fetchAll();
+    //     WHERE name LIKE :name";
+    // $stmt = $db->prepare($sql);
+    // var_dump($stmt);
+    // $stmt->bindValue(':name', $forms[0]);
+    // $stmt->execute();
+    // $res = $stmt->fetchAll();
     // 1件も見つからなければ新規登録
-    if ($res[0][0] <= 0) {
-        // 追加処理
-        // clientsテーブル
-        $sql = "INSERT INTO shikama.clients(name, kana, info)
-            VALUES(:name, :kana, :info)";
-        $stmt = $db->prepare($sql);
-        $stmt->bindValue(':name', $forms[0]);
-        $stmt->bindValue(':kana', $forms[1]);
-        $stmt->bindValue(':info', $forms[2]);
-        $res = $stmt->execute();
-        var_dump($res);
+    // if ($res[0][0] <= 0) {
+    //     // 追加処理
+    //     // clientsテーブル
+    //     $sql = "INSERT INTO shikama.clients(name, kana, info)
+    //         VALUES(:name, :kana, :info)";
+    //     $stmt = $db->prepare($sql);
+    //     $stmt->bindValue(':name', $forms[0]);
+    //     $stmt->bindValue(':kana', $forms[1]);
+    //     $stmt->bindValue(':info', $forms[2]);
+    //     $res = $stmt->execute();
+    //     var_dump($res);
         // 連絡先が入っていれば、テーブルに追加
 
         // 誕生日が入っていれば、すべての誕生日をテーブルに追加
 
         // 来店情報を追加
 
-    }
-
-    echo "<hr>";
-    var_dump($res);
-    echo "<hr>";
+    // }
 }
 ?>
 <!DOCTYPE html>
@@ -153,7 +193,7 @@ function insert_clients($db, $forms) {
     <h1>登録</h1>
     <nav>
     <ul>
-        <li><a href="/">顧客一覧</a></li>
+        <li><a href="shikama/">顧客一覧</a></li>
     </ul>
     </nav>
 </header>
