@@ -64,15 +64,20 @@ if (isset($_POST['SEND'])) {
         $err_flag = true;
     }
     
-    // if (!empty($forms['BIRTHDAY'])) {
-    //     $birthday = array();
-    //     $i = 0;
-    //     foreach ($forms['BIRTHDAY'] as $value) {
-    //         $brelation = $forms['RBIRTHDAY'][$i];
-    //         $birthday += array($i => array($value, $brelation));
-    //         $i++;
-    //     }
-    // }
+    // 生年月日と続柄を一つの配列にする
+    if (!empty($forms['BIRTHDAY'])) {
+        $birthday = array();
+        $i = 0;
+        foreach ($forms['BIRTHDAY'] as $value) {
+            $brelation = $forms['RBIRTHDAY'][$i];
+            $birthday += array($i => array($value, $brelation));
+            $i++;
+        }
+    }
+    // 生成した配列をBIRTHDAYへ代入
+    $forms['BIRTHDAY'] = $birthday;
+    // 続柄は必要なくなるので削除
+    unset($forms['RBIRTHDAY']);
 
     // 来店情報
     // 人数
@@ -120,14 +125,13 @@ if (isset($_POST['SEND'])) {
 } else {
     // 表示用データの読込
 }
-$dbo = null;
 
 
 function insert_clients($dbo, $forms) {
-    echo "<h1>インサート処理</h1>";
-    var_dump($forms);
+    // トランザクション処理開始
+    // $dbo->query("BEGIN");
 
-    // 顧客テーブルへ情報を追加するためのSQLの事前準備
+    // 顧客テーブルへ情報を追加する
     $kokyaku_sql = "INSERT INTO 顧客 VALUES (:id, :sei, :mei, :k_sei, :k_mei, :like)";
     $kokyaku = $dbo->prepare($kokyaku_sql);
     $kokyaku->bindParam(":id", $forms['ID']);
@@ -136,47 +140,50 @@ function insert_clients($dbo, $forms) {
     $kokyaku->bindParam(":k_sei", $forms['KANASEI']);
     $kokyaku->bindParam(":k_mei", $forms['KANAMEI']);
     $kokyaku->bindParam(":like", $forms['LIKE']);
+    $res = $kokyaku->execute();
+    var_dump($res);
 
-    // 生年月日テーブルへ情報を追加するためのSQLの事前準備
-    var_dump(count($birthday));
-    if (count($birthday) > 0) {
-        $sql = "INSERT INTO 生年月日 VALUES ";
-        foreach ($birthday as $k => $v) {
-            echo "$k, $v<br>";
+    // 電話番号テーブルへ情報を追加する
+    $phone_sql = "INSERT INTO 電話番号 VALUES(:id, :cid, :phone)";
+    $phone = $dbo->prepare($phone_sql);
+    $phone->bindParam(":id", $forms['ID']);
+    $phone->bindParam(":cid", $forms['PHONECLASS']);
+    $phone->bindParam(":phone", $forms['PHONE']);
+    $res = $phone->execute();
+    var_dump($res);
+
+    // 生年月日テーブルへ情報を追加する
+    if (count($forms['BIRTHDAY']) > 0) {
+        $birth_sql = "INSERT INTO 生年月日 VALUES (:id, :bid, :birthday, :rbirthday)";
+        $birth = $dbo->prepare($birth_sql);
+        $i = 1;
+        foreach ($forms['BIRTHDAY'] as $birthday) {
+            $birth->bindParam(":id", $forms['ID']);
+            $birth->bindParam(":bid", $i);
+            $birth->bindParam(":birthday", $birthday[0]);
+            $birth->bindParam(":rbirthday", $birthday[1]);
+            $res = $birth->execute();
+            var_dump($res);
+            $i++;
         }
     }
 
-    // $dbo->query("BEGIN;");
-    // $res = $kokyaku->execute();
-    // var_dump($res);
+    // 来店記録テーブルへ情報を追加する
+    $visit_sql = "INSERT INTO 来店記録 VALUES(null, :id, :date, :number, :relation, :eats)";
+    $visit = $dbo->prepare($visit_sql);
+    $visit->bindParam(":id", $forms['ID']);
+    $date = date("Y-m-d H:i:s");
+    var_dump($date);
+    $visit->bindParam(":date", $date);
+    $visit->bindParam(":number", $forms['NUMBER']);
+    $visit->bindParam(":relation", $forms['RELATION']);
+    $visit->bindParam(":eats", $forms['EATS']);
+    $res = $visit->execute();
+    var_dump($res);
 
+    // コミット
+    // $dbo->query("COMMIT");
 
-    // 先に名前で検索してIDを取得
-    //     WHERE name LIKE :name";
-    // $stmt = $db->prepare($sql);
-    // var_dump($stmt);
-    // $stmt->bindValue(':name', $forms[0]);
-    // $stmt->execute();
-    // $res = $stmt->fetchAll();
-    // 1件も見つからなければ新規登録
-    // if ($res[0][0] <= 0) {
-    //     // 追加処理
-    //     // clientsテーブル
-    //     $sql = "INSERT INTO shikama.clients(name, kana, info)
-    //         VALUES(:name, :kana, :info)";
-    //     $stmt = $db->prepare($sql);
-    //     $stmt->bindValue(':name', $forms[0]);
-    //     $stmt->bindValue(':kana', $forms[1]);
-    //     $stmt->bindValue(':info', $forms[2]);
-    //     $res = $stmt->execute();
-    //     var_dump($res);
-        // 連絡先が入っていれば、テーブルに追加
-
-        // 誕生日が入っていれば、すべての誕生日をテーブルに追加
-
-        // 来店情報を追加
-
-    // }
 }
 ?>
 <!DOCTYPE html>
@@ -193,7 +200,7 @@ function insert_clients($dbo, $forms) {
     <h1>登録</h1>
     <nav>
     <ul>
-        <li><a href="shikama/">顧客一覧</a></li>
+        <li><a href="./">顧客一覧</a></li>
     </ul>
     </nav>
 </header>
@@ -208,7 +215,16 @@ function insert_clients($dbo, $forms) {
     <label>セイ：<input value="フナバシ" type="text" name="KANASEI" size="10" maxlength="40"></label><br>
     <label>メイ：<input value="タロウ" type="text" name="KANAMEI" size="10" maxlength="40"></label><br>
     <label>連絡先：<input value="08011112222" type="text" name="PHONE" size="10" maxlength="11">
-    　区分：<input value="本人携帯" type="text" name="PHONECLASS" size="5" maxlength="10"></label><br>
+    　区分：
+    <select name="PHONECLASS">
+    <?php
+        $res = $dbo->query("SELECT 区分ID, 区分名 FROM 連絡先区分");
+        $classes = $res->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($classes as $class) {
+    ?>
+            <option value="<?= $class['区分ID'] ?>"><?= $class['区分名'] ?></option>
+    <?php } ?>
+    </select></label><br>
     <label>好み：<textarea rows="3" cols="35" name="LIKE">好みのデータ</textarea></label><br>
 
     <a onClick="addChildNodes('birthday');">＋生年月日欄を追加</a>　
@@ -312,3 +328,6 @@ function insert_clients($dbo, $forms) {
 </script>
 </body>
 </html>
+<?php
+    $dbo = null;
+?>

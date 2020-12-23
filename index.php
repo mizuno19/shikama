@@ -73,7 +73,7 @@ if (empty($res)) {
 } else {
     // 結果が空でなければデータを配列で取得
     $db_data = $res->fetchAll(PDO::FETCH_ASSOC);
-    var_dump($db_data);
+    // var_dump($db_data);
     if (empty($db_data)) {
         // 空だった場合
         echo "<p>登録されているデータはありません。</p>";
