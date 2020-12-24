@@ -21,6 +21,35 @@ function insert_visit($dbo, $id, $date, $number, $relation, $eats) {
     return $stmt->execute();
 }
 
+// 検索ワードの取得
+// $forms: 入力された検索ワード
+function get_search_where_sql($forms) {
+    $search_words = [];
+    // ダブルクォーテーションで括った部分は保持して、あらゆる空白で分割する
+    preg_replace_callback(
+        '/""(*SKIP)(*FAIL)|"([^"]++)"|([^"\p{Z}\p{Cc}]++)/u',
+        function (array $match) use (&$search_words) {
+            $search_words[] = $match[2] ?? $match[1];
+        }, $forms, -1, $_, PREG_SET_ORDER);
+    // 重複を省く
+    $search_words = array_values(array_unique($search_words));
+
+    // SQL用の条件文を生成
+    $where = "WHERE ";
+    foreach ($search_words as $word) {
+        // HTMLインジェクション対策
+        $word = htmlspecialchars($word, ENT_QUOTES, 'UTF-8');
+        if ($where !== "WHERE ") $where .= " AND ";
+        $search_sei = "姓 LIKE '%" . $word . "%'";
+        $search_mei = "名 LIKE '%" . $word . "%'";
+        $search_ksei = "セイ LIKE '%" . $word . "%'";
+        $search_kmei = "メイ LIKE '%" . $word . "%'";
+        // 結合
+        $where .= "(${search_sei} OR ${search_mei} OR ${search_ksei} OR ${search_kmei}) ";
+    }
+    return $where;
+}
+
 // データベースへ接続しPDOインスタンスを返す
 function dbconnect($dsn) {
     $pdo = null;

@@ -5,8 +5,6 @@ require_once 'lib/dblib.php';
 // データベースへ接続
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
-
-// HTMLヘッダ情報とヘッダ部分の表示
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -16,46 +14,32 @@ if (empty($dbo)) die('Error: データベースに接続できません');
     <link rel="stylesheet" href="css/index.css" type="text/css">
 </head>
 <body>
-<h1>顧客情報一覧</h1>
-<hr>
-<div id="header_box">
-    <form action="" method="GET">
-    <div id="search">
+<div id="content">
+<header>
+    <h1>顧客一覧</h1>
+    <nav><ul>
+        <li><a href="./"><button>全件表示</button></a></li>
+        <li><a href="./register.php"><button>新規登録</button></a></li>
+    </ul></nav>
+</header>
+<div id="search_box">
+    <form id="search" action="" method="GET">
         <input type="text" name="SEARCH" value="">
         <input type="submit" name="SEARCH_SEND" value="検索">
-        <div id="register">
-            <a href="register.php">新規顧客登録</a>
-        </div>
-    </div>
     </form>
 </div>
-<hr>
 
+<section id="main">
+    <div id="client_list">
 <?php
 $n = 0;     // スキップ数
 $m = 20;    // 取得数
 $where = '';
 
 // 検索ボタン押下のチェック
-if (isset($_GET['SEARCH_SEND'])) {
-    // 検索ワードの有無をチェック
-    if (isset($_GET['SEARCH']) && !empty($_GET['SEARCH'])) {
-        // 検索ワードの取得
-        $search_word = $_GET['SEARCH'];
-        $word = $search_word;
-
-        $or = " OR ";
-        $where = "WHERE ";
-
-        // 検索ワードが氏名の各列に含まれているか曖昧検索のための準備
-        $where .= "姓 LIKE '%" . $word . "%' ";
-        $where .= $or;
-        $where .= "名 LIKE '%" . $word . "%' ";
-        $where .= $or;
-        $where .= "セイ LIKE '%" . $word . "%' ";
-        $where .= $or;
-        $where .= "メイ LIKE '%" . $word . "%'";
-    }
+if (isset($_GET['SEARCH_SEND']) && !empty($_GET['SEARCH'])) {
+    // 検索ワードの取得
+    $where = get_search_where_sql($_GET['SEARCH']);
 }
 $order = "ORDER BY 顧客ID DESC";
 $limit = "LIMIT ${m} OFFSET ${n}";
@@ -79,37 +63,36 @@ if (empty($res)) {
         echo "<p>登録されているデータはありません。</p>";
     } else {
         // データ出力
-        echo '<div class="client_list">';
         $cnt = $n;
         foreach ($db_data as $row) {
             $id = $row['顧客ID'];
             $name = $row['姓'] . "　" . $row['名'];
             $kana = $row['セイ'] . "　" . $row['メイ'];
 ?>
-            <div class="client"><label id="<?= $cnt ?>">
-            <div class="id"><input type="checkbox" name="id[]" value="<?= $id ?>"></div>
-            <div class="no"><?= ($cnt + 1) ?></div>
-            <div class="name_box">
+    <div class="client">
+        <label id="<?= $cnt ?>">
+        <div class="id"><input type="checkbox" name="id[]" value="<?= $id ?>"></div>
+        <div class="no"><span><?= ($cnt + 1) ?></span></div>
+        <div class="name_box">
             <div class="kana"><?= $kana ?></div>
             <div class="name"><a href="print.php?ID=<?= $id ?>"><?= $name ?></a></div>
-            </div>
-            </label>
-            <div class="visit"><form action="visit.php" method="GET">
-            <input type="hidden" name="ID" value="<?= ${id} ?>">
-            <input type="submit" name="VISIT" value="来店情報登録">
-            </form></div>
-            </div>
+        </div>
+        </label>
+        <div class="visit">
+            <a href="visit.php?ID=<?= $id ?>"><button>来店情報登録</button></a>
+        </div>
+    </div>
 <?php
             $cnt++;
         }
-        echo '</div>';
     }
 }
 ?>
-
+    </div>
+</section>
+</div>
 </body>
 </html>
-
 <?php
-$dbo = null;
+    $dbo = null;
 ?>
