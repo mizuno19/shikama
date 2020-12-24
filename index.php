@@ -23,6 +23,7 @@ if (isset($_GET['NEXT']) && is_numeric($_GET['NEXT'])) {
     <meta charset="utf-8">
     <link rel="stylesheet" href="css/base.css" type="text/css">
     <link rel="stylesheet" href="css/index.css" type="text/css">
+    <title>顧客一覧</title>
 </head>
 <body>
 <div id="content">

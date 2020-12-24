@@ -50,6 +50,33 @@ function get_search_where_sql($forms) {
     return $where;
 }
 
+// 顧客IDの生成
+// $dbo: PDOインスタンス
+function create_id($dbo) {
+    // 生成した顧客IDに現在の日付を設定
+    date_default_timezone_set('Asia/Tokyo');
+    $id = date("ymd");
+
+    // 現在登録されている同日の顧客IDのうち最大値を取得
+    $sql = "SELECT MAX(顧客ID) AS 顧客ID FROM 顧客 WHERE 顧客ID LIKE '" . $id . "%'";
+    $res = execute($dbo, $sql);
+
+    // クエリ実行結果のチェック
+    if (!empty($res)) {
+        // 結果が空でなければデータを配列で取得
+        $max_id = ($res->fetchAll(PDO::FETCH_ASSOC))[0]["顧客ID"];
+        if (empty($max_id)) {
+            // IDの最大値がNULLならば、その日最初に登録する顧客のため末尾に1を追加する
+            $id .= "1";
+        } else {
+            // 最大値が存在する場合は、その最大値に+1をし文字列に変換する
+            $id = strval(intval($max_id) + 1);
+        }
+        return $id;
+    }
+    return null;
+}
+
 // データベースへ接続しPDOインスタンスを返す
 function dbconnect($dsn) {
     $pdo = null;

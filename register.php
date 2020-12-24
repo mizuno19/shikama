@@ -2,49 +2,147 @@
 require_once 'config.php';
 require_once 'lib/dblib.php';
 
-function create_id($dbo) {
-    // 生成した顧客IDに現在の日付を設定
-    date_default_timezone_set('Asia/Tokyo');
-    $id = date("ymd");
-
-    // 現在登録されている同日の顧客IDのうち最大値を取得
-    $sql = "SELECT MAX(顧客ID) AS 顧客ID FROM 顧客 WHERE 顧客ID LIKE '" . $id . "%'";
-    $res = execute($dbo, $sql);
-
-    // クエリ実行結果のチェック
-    if (!empty($res)) {
-        // 結果が空でなければデータを配列で取得
-        $max_id = ($res->fetchAll(PDO::FETCH_ASSOC))[0]["顧客ID"];
-        if (empty($max_id)) {
-            // IDの最大値がNULLならば、その日最初に登録する顧客のため末尾に1を追加する
-            $id .= "1";
-        } else {
-            // 最大値が存在する場合は、その最大値に+1をし文字列に変換する
-            $id = strval(intval($max_id) + 1);
-        }
-
-        return $id;
-    }
-
-    return null;
-}
-
 // データベースへ接続
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
+?>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <link href="css/base.css" rel="stylesheet" type="text/css">
+    <link href="css/register.css" rel="stylesheet" type="text/css">
+    <title>新規登録</title>
+</head>
+<body>
+<div id="contents">
+<header>
+    <h1>新規登録</h1>
+    <nav>
+    <ul>
+        <li><a href="./"><button>顧客一覧</button></a></li>
+    </ul>
+    </nav>
+</header>
+<section id="main">
 
+<?php
 # POSTでデータが送信されていれば登録処理
+$err_flag = false;
 if (isset($_POST['SEND'])) {
+    // 登録確認処理
+?>
+    <h2>登録内容確認</h2>
+    <form action="" method="POST">
+        <fieldset>
+        <legend>顧客情報</legend>
+        <?php
+        if (empty($_POST['SEI'])) { 
+            $err_flag = true; ?>
+            <label>姓：<input value="<?= $_POST['SEI'] ?>" type="text" name="SEI" size="10" maxlength="20"></label>
+        <?php } else { ?>
+            <label>姓：<input value="<?= $_POST['SEI'] ?>" type="hidden" name="SEI"><?= $_POST['SEI'] ?></label><br>
+        <?php } ?>
+        <?php
+        if (empty($_POST['MEI'])) {
+            $err_flag = true; ?>
+            <label>名：<input value="<?= $_POST['MEI'] ?>" type="text" name="MEI" size="10" maxlength="20"></label>
+        <?php } else { ?>
+            <label>名：<input value="<?= $_POST['MEI'] ?>" type="hidden" name="MEI"><?= $_POST['MEI'] ?></label><br>
+        <?php } ?>
+        <?php
+        if (empty($_POST['KANASEI'])) {
+            $err_flag = true; ?>
+            <label>セイ：<input value="<?= $_POST['KANASEI'] ?>" type="text" name="KANASEI" size="10" maxlength="20"></label><br>
+        <?php } else { ?>
+            <label>セイ：<input value="<?= $_POST['KANASEI'] ?>" type="hidden" name="KANASEI"><?= $_POST['KANASEI'] ?></label><br>
+        <?php } ?>
+        <?php
+        if (empty($_POST['KANAMEI'])) {
+            $err_flag = true; ?>
+            <label>メイ：<input value="<?= $_POST['KANAMEI'] ?>" type="text" name="KANAMEI" size="10" maxlength="20"></label><br>
+        <?php } else { ?>
+            <label>メイ：<input value="<?= $_POST['KANAMEI'] ?>" type="hidden" name="KANAMEI"><?= $_POST['KANAMEI'] ?></label><br>
+        <?php } ?>
+<?php
+
+    // 電話番号と区分を一つの配列にする
+    if (!empty($_POST['PHONE'])) {
+        $phone = array();
+        $i = 0;
+        foreach ($_POST['PHONE'] as $value) {
+            $pclass = $_POST['PHONECLASS'][$i];
+            $phone += array($i => array($value, $pclass));
+            $i++;
+        }
+    } else {
+        $err_flag = true;
+    }
+    
+    // 生年月日と続柄を一つの配列にする
+    if (!empty($_POST['BIRTHDAY'])) {
+        $birthday = array();
+        $i = 0;
+        foreach ($_POST['BIRTHDAY'] as $value) {
+            $brelation = $_POST['RBIRTHDAY'][$i];
+            $birthday += array($i => array($value, $brelation));
+            $i++;
+        }
+    }
+    
+    if ($err_flag) echo "入力項目にエラーがあります";
+?>
+
+    <?php
+        $res = $dbo->query("SELECT 区分ID, 区分名 FROM 連絡先区分");
+        $classes = $res->fetchAll(PDO::FETCH_ASSOC);
+        $phone_classes_id = '';
+        $phone_classes = '';
+        foreach ($classes as $class) {
+            $phone_classes_id .= "'" . $class['区分ID'] . "',";
+            $phone_classes .= "'" . $class['区分名'] . "',";
+        }
+    ?>
+    <script>
+        const phoneClassesId = [ <?= $phone_classes_id ?> ];
+        const phoneClasses = [ <?= $phone_classes ?> ];
+    </script>
+    <a onClick="addChildNodes('phone');">＋連絡先欄を追加</a>　
+    <div id="phone">
+        <label id="phone1"><a onClick="removeChildNodes('phone', 'phone1');">－</a>
+            <span>連絡先：</span><input value="08011112222" type="text" name="PHONE[]" size="10" maxlength="11">
+            <span>　区分：</span><select name="PHONECLASS[]"><script>
+                for (i = 0; i < phoneClasses.length; i++) {
+                    document.write("<option value=" + phoneClassesId[i] + ">" + phoneClasses[i] + "</option>");
+                }
+            </script></select>
+        </label>
+    </div>
+    <br>
+
+    <label>好み：<textarea rows="3" cols="35" name="LIKE">好みのデータ</textarea></label><br>
+
+    <a onClick="addChildNodes('birthday');">＋生年月日欄を追加</a>　
+    <div id="birthday">
+        <label id="birth1"><a onClick="removeChildNodes('birthday', 'birth1');">－</a>
+        <span>生年月日：</span><input value="1979/01/01" type="text" name="BIRTHDAY[]" size="10">
+        <span>　続柄：</span><input value="本人" type="text" name="RBIRTHDAY[]" size="5"></label>
+    </div>
+
+    </fieldset>
+    <input type="submit" name="REGIST" value="登　録">
+</form>
+
+<?php
+} else if(isset($_POST['REGISTER'])) {
+    // 登録処理
+    // 登録確認処理
     $err_flag = false;      // エラーフラグ
     $forms = array();       // 空の配列を準備
     // 列名をキーにして連想配列を作成
     foreach ($_POST as $key => $value) {
         $forms[$key] = $value;
     }
-    // 確認用
-    // echo "<hr>";
-    // var_dump($forms);
-    // echo "<hr>";
 
     // 顧客IDの生成
     $id = create_id($dbo);
@@ -93,51 +191,10 @@ if (isset($_POST['SEND'])) {
     // 続柄は必要なくなるので削除
     unset($forms['RBIRTHDAY']);
 
-    // 来店情報
-    // 人数
-    if (!empty($forms['NUMBER'])) {
-        $number = $forms['NUMBER'];
-    } else {
-        $err_flag = true;
-    }
-    // 続柄
-    if (!empty($forms['RELATION'])) {
-        $relation = $forms['RELATION'];
-    }
-    // 食事内容
-    if (!empty($forms['EATS'])) {
-        $eats = $forms['EATS'];
-    }
-
     if ($err_flag) echo "入力項目にエラーがあります";
-
-
-    // echo "<hr>変数内容確認<br>";
-    // echo "name = $name<br>";
-    // echo "kana = $kana<br>";
-    // echo "phone = $phone($phone_class)<br>";
-    // echo "like = $like<br>";
-    // foreach ($birthday as $rows) {
-    //     foreach ($rows as $key => $value) {
-    //         echo "birthday = $key : $value<br>";
-    //     }
-    // }
-    // echo "number = $number<br>";
-    // echo "relation = $relation<br>";
-    // echo "eats = $eats<br>";
-    // echo "<hr>";
-
-    // 一旦配列にする
-    //$formdata = array($id, $sei, $mei, $k_sei, $k_mei, $like, $birthday, $number, $relation, $eats);
 
     // データベースへ登録
     insert_clients($dbo, $forms);
-    
-    //$sql = "SELECT * FROM shikama.clients";
-    //$res = $dbo->query($sql);
-
-} else {
-    // 表示用データの読込
 }
 
 
@@ -184,10 +241,6 @@ function insert_clients($dbo, $forms) {
             }
         }
 
-        // 来店記録テーブルへ情報を追加する
-        $date = date("Y-m-d H:i:s");    // 来店日時を登録時点の日時で作成
-        insert_visit($dbo, $forms['ID'], $date, $forms['NUMBER'], $forms['RELATION'], $forms['EATS']);
-
         // コミット
         $dbo->commit();
 
@@ -199,27 +252,11 @@ function insert_clients($dbo, $forms) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="utf-8">
-    <link href="css/base.css" rel="stylesheet" type="text/css">
-    <link href="css/register.css" rel="stylesheet" type="text/css">
-    <title>顧客管理</title>
-</head>
-<body>
-<div id="contents">
-<header>
-    <h1>登録</h1>
-    <nav>
-    <ul>
-        <li><a href="./">顧客一覧</a></li>
-    </ul>
-    </nav>
-</header>
 
-<section id="main">
 
+<?php
+if (!isset($_POST['SEND'])) {
+?>
 <form action="" method="POST">
     <fieldset>
     <legend>顧客情報</legend>
@@ -265,14 +302,16 @@ function insert_clients($dbo, $forms) {
     </div>
 
     </fieldset>
-    <fieldset>
-    <legend>来店情報</legend>
-    <label>人数：<input value="3" type="text" name="NUMBER" size="3">人</label><br>
-    <label>続柄：<input value="家族" type="text" name="RELATION" size="10"></label><br>
-    <label>食事内容：<textarea rows="3" cols="35" name="EATS">ふるふる</textarea></label><br>
-    </fieldset>
-    <input type="submit" name="SEND" value="登　録">
+    <input type="submit" name="SEND" value="確　認">
 </form>
+<?php
+} else {
+?>
+
+
+<?php
+}
+?>
 
 </section>
 
