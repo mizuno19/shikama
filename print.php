@@ -58,7 +58,14 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
                     <p><?php echo substr($db_data[$i]["日時"],0,10) ?></p>
                     <p><?php echo substr($db_data[$i]["日時"],11) ?></p>
                     </div>
-                    <p class="menu"><?php echo $db_data[$i]["メニュー"] ?></p>
+                    <p class="menu">
+                    <?php $menu = explode("、",$db_data[$i]["メニュー"]);
+                    $j=1;
+                    foreach($menu as $m){
+                        echo "$j".".  "."$m<br>";
+                        $j++;
+                    }
+                    ?></p>
                 </div>
                 <?php $i++; }?>
                 <div  class="center"><input type="submit" value="印刷" class="noprint"></div>
