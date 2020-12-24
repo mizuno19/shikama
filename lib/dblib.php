@@ -16,6 +16,8 @@ function insert_visit($dbo, $id, $date, $number, $relation, $eats) {
     $stmt->bindParam(":number", $number);
     $stmt->bindParam(":relation", $relation);
     $stmt->bindParam(":eats", $eats);
+
+    // SQLを実行して結果を戻す
     return $stmt->execute();
 }
 

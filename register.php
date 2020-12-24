@@ -168,16 +168,9 @@ function insert_clients($dbo, $forms) {
         }
 
         // 来店記録テーブルへ情報を追加する
-        $date = date("Y-m-d H:i:s");
-        $res = insert_visit($dbo, $forms['ID'], $date, $forms['NUMBER'], $forms['RELATION'], $forms['EATS']);
-        // $visit_sql = "INSERT INTO 来店記録 VALUES(null, :id, :date, :number, :relation, :eats)";
-        // $visit = $dbo->prepare($visit_sql);
-        // $visit->bindParam(":id", $forms['ID']);
-        // $visit->bindParam(":date", $date);
-        // $visit->bindParam(":number", $forms['NUMBER']);
-        // $visit->bindParam(":relation", $forms['RELATION']);
-        // $visit->bindParam(":eats", $forms['EATS']);
-        // $res = $visit->execute();
+        date_default_timezone_get('Asia/Tokyo');
+        $date = date("Y-m-d H:i:s");    // 来店日時を登録時点の日時で作成
+        insert_visit($dbo, $forms['ID'], $date, $forms['NUMBER'], $forms['RELATION'], $forms['EATS']);
 
         // コミット
         $dbo->commit();
