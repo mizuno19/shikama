@@ -5,6 +5,15 @@ require_once 'lib/dblib.php';
 // データベースへ接続
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
+
+$res = $dbo->query("SELECT 区分ID, 区分名 FROM 連絡先区分");
+$classes = $res->fetchAll(PDO::FETCH_ASSOC);
+$phone_classes_id = '';
+$phone_classes = '';
+foreach ($classes as $class) {
+    $phone_classes_id .= "'" . $class['区分ID'] . "',";
+    $phone_classes .= "'" . $class['区分名'] . "',";
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -13,6 +22,10 @@ if (empty($dbo)) die('Error: データベースに接続できません');
     <link href="css/base.css" rel="stylesheet" type="text/css">
     <link href="css/register.css" rel="stylesheet" type="text/css">
     <title>新規登録</title>
+    <script>
+        const phoneClassesId = [ <?= $phone_classes_id ?> ];
+        const phoneClasses = [ <?= $phone_classes ?> ];
+    </script>
 </head>
 <body>
 <div id="contents">
@@ -64,16 +77,28 @@ if (isset($_POST['SEND'])) {
         <?php } else { ?>
             <label>メイ：<input value="<?= $_POST['KANAMEI'] ?>" type="hidden" name="KANAMEI"><?= $_POST['KANAMEI'] ?></label><br>
         <?php } ?>
+
+        <label>好み：<input value="<?= $_POST['LIKE'] ?>" type="hidden" name="LIKE"><?= $_POST['LIKE'] ?></label><br>
+
+        <label>連絡先</label>
 <?php
 
     // 電話番号と区分を一つの配列にする
     if (!empty($_POST['PHONE'])) {
-        $phone = array();
+        $phones = array();
         $i = 0;
         foreach ($_POST['PHONE'] as $value) {
             $pclass = $_POST['PHONECLASS'][$i];
-            $phone += array($i => array($value, $pclass));
+            $phones += array($i => array($value, $pclass));
             $i++;
+        }
+
+        foreach ($phones as $phone) {
+?>
+            <input value="<?= $phone[0] ?>" type="hidden" name="PHONE[]">
+            <input value="<?= $phone[1] ?>" type="hidden" name="PHONECLASS[]">
+            <p><?= $phone[0] ?>(<script>document.write(phoneClasses[<?= ($phone[1] - 1) ?>]);</script>)</p>
+<?php
         }
     } else {
         $err_flag = true;
@@ -88,49 +113,24 @@ if (isset($_POST['SEND'])) {
             $birthday += array($i => array($value, $brelation));
             $i++;
         }
+
+        foreach ($birthday as $birth) {
+?>
+            <input value="<?= $birth[0] ?>" type="hidden" name="BIRTHDAY[]">
+            <input value="<?= $birth[1] ?>" type="hidden" name="RBIRTHDAY[]">
+            <p><?= $birth[0] ?>(<?= $birth[1] ?>])</p>
+<?php
+        }
     }
-    
+
     if ($err_flag) echo "入力項目にエラーがあります";
 ?>
-
-    <?php
-        $res = $dbo->query("SELECT 区分ID, 区分名 FROM 連絡先区分");
-        $classes = $res->fetchAll(PDO::FETCH_ASSOC);
-        $phone_classes_id = '';
-        $phone_classes = '';
-        foreach ($classes as $class) {
-            $phone_classes_id .= "'" . $class['区分ID'] . "',";
-            $phone_classes .= "'" . $class['区分名'] . "',";
-        }
-    ?>
-    <script>
-        const phoneClassesId = [ <?= $phone_classes_id ?> ];
-        const phoneClasses = [ <?= $phone_classes ?> ];
-    </script>
-    <a onClick="addChildNodes('phone');">＋連絡先欄を追加</a>　
-    <div id="phone">
-        <label id="phone1"><a onClick="removeChildNodes('phone', 'phone1');">－</a>
-            <span>連絡先：</span><input value="08011112222" type="text" name="PHONE[]" size="10" maxlength="11">
-            <span>　区分：</span><select name="PHONECLASS[]"><script>
-                for (i = 0; i < phoneClasses.length; i++) {
-                    document.write("<option value=" + phoneClassesId[i] + ">" + phoneClasses[i] + "</option>");
-                }
-            </script></select>
-        </label>
-    </div>
-    <br>
-
-    <label>好み：<textarea rows="3" cols="35" name="LIKE">好みのデータ</textarea></label><br>
-
-    <a onClick="addChildNodes('birthday');">＋生年月日欄を追加</a>　
-    <div id="birthday">
-        <label id="birth1"><a onClick="removeChildNodes('birthday', 'birth1');">－</a>
-        <span>生年月日：</span><input value="1979/01/01" type="text" name="BIRTHDAY[]" size="10">
-        <span>　続柄：</span><input value="本人" type="text" name="RBIRTHDAY[]" size="5"></label>
-    </div>
-
     </fieldset>
-    <input type="submit" name="REGIST" value="登　録">
+    <?php if ($err_flag) { ?>
+        <input type="submit" name="SEND" value="確　認">
+    <?php } else { ?>
+        <input type="submit" name="REGIST" value="登　録">
+    <?php } ?>
 </form>
 
 <?php
