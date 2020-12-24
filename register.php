@@ -61,9 +61,22 @@ if (isset($_POST['SEND'])) {
         $err_flag = true;
     }
 
-    if (empty($forms['PHONE']) || empty($forms['PHONECLASS'])) {
+    // 電話番号と区分を一つの配列にする
+    if (!empty($forms['PHONE'])) {
+        $phone = array();
+        $i = 0;
+        foreach ($forms['PHONE'] as $value) {
+            $pclass = $forms['PHONECLASS'][$i];
+            $phone += array($i => array($value, $pclass));
+            $i++;
+        }
+    } else {
         $err_flag = true;
     }
+    // 生成した配列をPHONEへ代入
+    $forms['PHONE'] = $phone;
+    // 区分は必要なくなるので削除
+    unset($forms['PHONECLASS']);
     
     // 生年月日と続柄を一つの配列にする
     if (!empty($forms['BIRTHDAY'])) {
@@ -145,12 +158,16 @@ function insert_clients($dbo, $forms) {
         $res = $kokyaku->execute();
 
         // 電話番号テーブルへ情報を追加する
-        $phone_sql = "INSERT INTO 電話番号 VALUES(:id, :cid, :phone)";
-        $phone = $dbo->prepare($phone_sql);
-        $phone->bindParam(":id", $forms['ID']);
-        $phone->bindParam(":cid", $forms['PHONECLASS']);
-        $phone->bindParam(":phone", $forms['PHONE']);
-        $res = $phone->execute();
+        if (count($forms['PHONE']) > 0) {
+            $phone_sql = "INSERT INTO 電話番号 VALUES(:id, :cid, :phone)";
+            $phone = $dbo->prepare($phone_sql);
+            foreach ($forms['PHONE'] as $phone_val) {
+                $phone->bindParam(":id", $forms['ID']);
+                $phone->bindParam(":cid", $phone_val[1]);
+                $phone->bindParam(":phone", $phone_val[0]);
+                $res = $phone->execute();
+            }
+        }
 
         // 生年月日テーブルへ情報を追加する
         if (count($forms['BIRTHDAY']) > 0) {
@@ -168,7 +185,6 @@ function insert_clients($dbo, $forms) {
         }
 
         // 来店記録テーブルへ情報を追加する
-        date_default_timezone_get('Asia/Tokyo');
         $date = date("Y-m-d H:i:s");    // 来店日時を登録時点の日時で作成
         insert_visit($dbo, $forms['ID'], $date, $forms['NUMBER'], $forms['RELATION'], $forms['EATS']);
 
@@ -211,17 +227,34 @@ function insert_clients($dbo, $forms) {
     <label>名：<input value="太郎" type="text" name="MEI" size="10" maxlength="20"></label><br>
     <label>セイ：<input value="フナバシ" type="text" name="KANASEI" size="10" maxlength="40"></label><br>
     <label>メイ：<input value="タロウ" type="text" name="KANAMEI" size="10" maxlength="40"></label><br>
-    <label>連絡先：<input value="08011112222" type="text" name="PHONE" size="10" maxlength="11">
-    　区分：
-    <select name="PHONECLASS">
+
     <?php
         $res = $dbo->query("SELECT 区分ID, 区分名 FROM 連絡先区分");
         $classes = $res->fetchAll(PDO::FETCH_ASSOC);
+        $phone_classes_id = '';
+        $phone_classes = '';
         foreach ($classes as $class) {
+            $phone_classes_id .= "'" . $class['区分ID'] . "',";
+            $phone_classes .= "'" . $class['区分名'] . "',";
+        }
     ?>
-            <option value="<?= $class['区分ID'] ?>"><?= $class['区分名'] ?></option>
-    <?php } ?>
-    </select></label><br>
+    <script>
+        const phoneClassesId = [ <?= $phone_classes_id ?> ];
+        const phoneClasses = [ <?= $phone_classes ?> ];
+    </script>
+    <a onClick="addChildNodes('phone');">＋連絡先欄を追加</a>　
+    <div id="phone">
+        <label id="phone1"><a onClick="removeChildNodes('phone', 'phone1');">－</a>
+            <span>連絡先：</span><input value="08011112222" type="text" name="PHONE[]" size="10" maxlength="11">
+            <span>　区分：</span><select name="PHONECLASS[]"><script>
+                for (i = 0; i < phoneClasses.length; i++) {
+                    document.write("<option value=" + phoneClassesId[i] + ">" + phoneClasses[i] + "</option>");
+                }
+            </script></select>
+        </label>
+    </div>
+    <br>
+
     <label>好み：<textarea rows="3" cols="35" name="LIKE">好みのデータ</textarea></label><br>
 
     <a onClick="addChildNodes('birthday');">＋生年月日欄を追加</a>　
@@ -263,63 +296,113 @@ function insert_clients($dbo, $forms) {
 
     // +が押されたら入力ボックスを増やす関数
     function addChildNodes(obj) {
-        // ダミーデータの生成
-        var yy = Math.floor(Math.random() * (2020 - 1980)) + 1980;
-        var mm = Math.floor(Math.random() * 11) + 1;
-        var dd = Math.floor(Math.random() * 30) + 1;
-        if (mm < 10) mm = "0" + mm;
-        if (dd < 10) dd = "0" + dd;
-        var dat = yy + "/" + mm + "/" + dd;
-        var rSrc = [ "妻", "子", "友人", "恋人", "同僚", "上司", "部下", ];
-        var r = rSrc[Math.floor(Math.random() * rSrc.length)];
-
         // 親要素の取得
         const parent = document.getElementById(obj);
         //console.log(id, parent);  // 確認用
 
-        // 削除用に使うIDの生成
-        const rmId = "birth" + (parseInt(parent.childElementCount) + 1);
-
         // 追加する要素の生成
         // ラベル
         const label = document.createElement("label");
-        label.setAttribute("id", rmId)
-        
-        // 「生年月日：」を表示するspan要素
-        const birthdayLabel = document.createElement("span");
-        birthdayLabel.innerHTML = " 生年月日：";
+        // spanタグ
+        const elm1Label = document.createElement("span");
+        const elm2Label = document.createElement("span");
 
-        // 生年月日の入力テキストボックス
-        const child = document.createElement("input");
-        child.setAttribute("value", dat);  // ダミーデータ
-        child.setAttribute("type", "text");
-        child.setAttribute("name", "BIRTHDAY[]");
-        child.setAttribute("size", "10");
 
-        // 「続柄：」を表示するspan要素
-        const rbirthdayLabel = document.createElement("span");
-        rbirthdayLabel.innerHTML = " 　続柄：";
+        if (obj === "phone") {
+            // ダミーデータの生成
+            var tel = "08011112222";
 
-        // 続柄の入力テキストボックス
-        const rchild = document.createElement("input");
-        rchild.setAttribute("value", r);         // ダミーデータ
-        rchild.setAttribute("type", "text");
-        rchild.setAttribute("name", "RBIRTHDAY[]");
-        rchild.setAttribute("size", "5");
 
-        // 削除用リンク
-        const rmlink = document.createElement("a");
-        rmlink.setAttribute("onClick", "removeChildNodes('birthday', '" + rmId + "');");
-        rmlink.innerHTML = "－";
+            // 削除用に使うIDの生成
+            const rmId = "birth" + (parseInt(parent.childElementCount) + 1);
 
-        // 親要素のラベルにspanとテキストボックスを追加
-        label.append(rmlink);
-        label.append(birthdayLabel)
-        label.append(child);
-        label.append(rbirthdayLabel)
-        label.append(rchild);
+            // 追加する要素の生成
+            // ラベルのIDをセット
+            label.setAttribute("id", rmId)
+            elm1Label.innerHTML = " 連絡先：";  // 「連絡先：」を表示するspan要素
+            elm2Label.innerHTML = " 　区分：";  // 「　区分：」を表示するspan要素
 
-        // 親要素のdivにlabelとbrを追加
+            // 連絡先の入力テキストボックス
+            const child = document.createElement("input");
+            child.setAttribute("value", tel);  // ダミーデータ
+            child.setAttribute("type", "text");
+            child.setAttribute("name", "PHONE[]");
+            child.setAttribute("size", "10");
+
+            // 区分のセレクトボックス
+            const classId = document.createElement("select");
+            classId.setAttribute("name", "PHONECLASS[]");
+            for (i = 0; i < phoneClasses.length; i++) {
+                const classIdChild = document.createElement("option");
+                classIdChild.setAttribute("value", phoneClassesId[i]);
+                classIdChild.innerHTML = phoneClasses[i];
+                classId.append(classIdChild);
+            }
+
+            // 削除用リンク
+            const rmlink = document.createElement("a");
+            rmlink.setAttribute("onClick", "removeChildNodes('phone', '" + rmId + "');");
+            rmlink.innerHTML = "－";
+
+            // 親要素のラベルにspanとテキストボックスを追加
+            label.append(rmlink);
+            label.append(elm1Label)
+            label.append(child);
+            label.append(elm2Label)
+            label.append(classId);
+
+        } else if (obj === "birthday") {
+            // ダミーデータの生成
+            var yy = Math.floor(Math.random() * (2020 - 1980)) + 1980;
+            var mm = Math.floor(Math.random() * 11) + 1;
+            var dd = Math.floor(Math.random() * 30) + 1;
+            if (mm < 10) mm = "0" + mm;
+            if (dd < 10) dd = "0" + dd;
+            var dat = yy + "/" + mm + "/" + dd;
+            var rSrc = [ "妻", "子", "友人", "恋人", "同僚", "上司", "部下", ];
+            var r = rSrc[Math.floor(Math.random() * rSrc.length)];
+
+
+            // 削除用に使うIDの生成
+            const rmId = "birth" + (parseInt(parent.childElementCount) + 1);
+
+            // 追加する要素の生成
+            // ラベルのIDをセット
+            label.setAttribute("id", rmId)
+            
+            // 「生年月日：」を表示するspan要素
+            elm1Label.innerHTML = " 生年月日：";
+
+            // 生年月日の入力テキストボックス
+            const child = document.createElement("input");
+            child.setAttribute("value", dat);  // ダミーデータ
+            child.setAttribute("type", "text");
+            child.setAttribute("name", "BIRTHDAY[]");
+            child.setAttribute("size", "10");
+
+            // 「続柄：」を表示するspan要素
+            elm2Label.innerHTML = " 　続柄：";
+
+            // 続柄の入力テキストボックス
+            const rchild = document.createElement("input");
+            rchild.setAttribute("value", r);         // ダミーデータ
+            rchild.setAttribute("type", "text");
+            rchild.setAttribute("name", "RBIRTHDAY[]");
+            rchild.setAttribute("size", "5");
+
+            // 削除用リンク
+            const rmlink = document.createElement("a");
+            rmlink.setAttribute("onClick", "removeChildNodes('birthday', '" + rmId + "');");
+            rmlink.innerHTML = "－";
+
+            // 親要素のラベルにspanとテキストボックスを追加
+            label.append(rmlink);
+            label.append(elm1Label)
+            label.append(child);
+            label.append(elm2Label)
+            label.append(rchild);
+        }
+        // 親要素のdivにlabelを追加
         parent.append(label);
     }
 </script>
