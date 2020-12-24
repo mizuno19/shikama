@@ -129,7 +129,6 @@ if (isset($_POST['SEND'])) {
 
 
 function insert_clients($dbo, $forms) {
-
     try {
         // トランザクション処理開始
         $dbo->beginTransaction();
@@ -169,15 +168,16 @@ function insert_clients($dbo, $forms) {
         }
 
         // 来店記録テーブルへ情報を追加する
-        $visit_sql = "INSERT INTO 来店記録 VALUES(null, :id, :date, :number, :relation, :eats)";
-        $visit = $dbo->prepare($visit_sql);
-        $visit->bindParam(":id", $forms['ID']);
         $date = date("Y-m-d H:i:s");
-        $visit->bindParam(":date", $date);
-        $visit->bindParam(":number", $forms['NUMBER']);
-        $visit->bindParam(":relation", $forms['RELATION']);
-        $visit->bindParam(":eats", $forms['EATS']);
-        $res = $visit->execute();
+        $res = insert_visit($dbo, $forms['ID'], $date, $forms['NUMBER'], $forms['RELATION'], $forms['EATS']);
+        // $visit_sql = "INSERT INTO 来店記録 VALUES(null, :id, :date, :number, :relation, :eats)";
+        // $visit = $dbo->prepare($visit_sql);
+        // $visit->bindParam(":id", $forms['ID']);
+        // $visit->bindParam(":date", $date);
+        // $visit->bindParam(":number", $forms['NUMBER']);
+        // $visit->bindParam(":relation", $forms['RELATION']);
+        // $visit->bindParam(":eats", $forms['EATS']);
+        // $res = $visit->execute();
 
         // コミット
         $dbo->commit();
