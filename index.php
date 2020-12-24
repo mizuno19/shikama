@@ -5,6 +5,17 @@ require_once 'lib/dblib.php';
 // データベースへ接続
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
+
+// テーブル内の全データ数を取得
+$max = execute($dbo, "SELECT COUNT(*) AS データ数 FROM 顧客")->fetch(PDO::FETCH_ASSOC)["データ数"];
+$n = 0;     // スキップ数
+$m = 5;    // 取得数
+
+if (isset($_GET['NEXT']) && is_numeric($_GET['NEXT'])) {
+    $n = $_GET['NEXT'];
+} else {
+    $n = 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -19,7 +30,7 @@ if (empty($dbo)) die('Error: データベースに接続できません');
     <h1>顧客一覧</h1>
     <nav><ul>
         <li><a href="./"><button>全件表示</button></a></li>
-        <li><a href="./register.php"><button>新規登録</button></a></li>
+        <li><a href="register.php"><button>新規登録</button></a></li>
     </ul></nav>
 </header>
 <div id="search_box">
@@ -28,14 +39,21 @@ if (empty($dbo)) die('Error: データベースに接続できません');
         <input type="submit" name="SEARCH_SEND" value="検索">
     </form>
 </div>
-
+<div id="next">
+    <p>
+<?php
+    for ($i = 0; $i < ($max / $m); $i++) {
+?>
+    <a href="?NEXT=<?= $i * $m ?>"><?= ($i + 1) ?></a>
+<?php
+    }
+?>
+    </p>
+</div>
 <section id="main">
     <div id="client_list">
 <?php
-$n = 0;     // スキップ数
-$m = 20;    // 取得数
 $where = '';
-
 // 検索ボタン押下のチェック
 if (isset($_GET['SEARCH_SEND']) && !empty($_GET['SEARCH'])) {
     // 検索ワードの取得
@@ -79,7 +97,7 @@ if (empty($res)) {
         </div>
         </label>
         <div class="visit">
-            <a href="visit.php?ID=<?= $id ?>"><button>来店情報登録</button></a>
+            <a href="./visit.php?ID=<?= $id ?>"><button>来店情報登録</button></a>
         </div>
     </div>
 <?php

@@ -19,12 +19,6 @@ echo <<<"EOH"
 <hr>
 EOH;
 
-// submitボタンが押されて遷移してきたわけでなければトップへ
-if (!isset($_GET['VISIT'])) {
-    header('Location: /');
-    exit;
-}
-
 // 顧客IDのチェック
 if (isset($_GET['ID'])) {
     $id = $_GET['ID'];

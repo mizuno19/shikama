@@ -1,5 +1,14 @@
 @charset "utf-8";
 
+#register {
+    display: inline;
+    margin-left: 2rem;
+}
+#register a {
+    vertical-align: middle;
+    font-size: 1.2rem;
+}
+
 div#search_box {
     padding: 0.5rem;
     overflow: hidden;
@@ -17,13 +26,18 @@ div#search_box {
     font-size: 1.2rem;
 }
 
-#register {
-    display: inline;
-    margin-left: 2rem;
+#next {
+    width: 100%;
 }
-#register a {
-    vertical-align: middle;
+#next p {
     font-size: 1.2rem;
+}
+#next p a:first-child {
+    margin-left: 1.5rem;
+}
+#next p a {
+    margin-left: 4px;
+    margin-right: 4px;
 }
 
 #client_list {
@@ -34,9 +48,6 @@ div#search_box {
     border: #9f9f9f solid;
     border-width: 0 0 1px 0;
     overflow: hidden;
-}
-#client_list .client label {
-    border: 1px solid #00f;
 }
 #client_list .client .id,
 #client_list .client .no {
@@ -64,7 +75,6 @@ div#search_box {
 #client_list .client .name_box {
     float: left;
     width: 200px;
-    border: 1px solid #070;
     overflow: hidden;
 }
 #client_list .client .kana {
@@ -74,11 +84,15 @@ div#search_box {
     font-size: 1.2rem;
 }
 #client_list .client .visit {
-    display: block;
+    position: relative;
     float: left;
-    background-color: #00f;
 }
-#client_list .client .visit button {
+#client_list .client .visit a {
+    position: absolute;
+    top: 8px;
+    width: 180px;
+}
+#client_list .client .visit a button {
     width: 180px;
     font-size: 1.2rem;
 }
