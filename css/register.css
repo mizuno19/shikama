@@ -1,9 +1,69 @@
-#phone label, #birthday label {
+#main form fieldset {
+    width: 95%;
+    margin: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fff;
+    color: #000;
+    border: 3px solid #af3f3f;
+}
+#main form fieldset legend {
+    padding: 0 12px;
+}
+#main form fieldset div {
+    clear: both;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+#main form fieldset div label span {
+    margin-top: 2px;
+}
+#main form fieldset #name label,
+#main form fieldset #kana label {
+    width: 210px;
+    float: left;
+}
+#main form fieldset #name label span,
+#main form fieldset #kana label span {
     display: block;
+    float: left;
+    width: 60px;
+    text-align: right;
+}
+#main form fieldset #like label span {
+    display: block;
+    width: 100%;
+}
+#main form fieldset #like label textarea {
+    margin-left: 3.7rem;
+    width: 21rem;
+    height: 5rem;
+}
+
+#main form fieldset #phone #phone_list div,
+#main form fieldset #birthday #birthday_list div {
+    margin: 0;
+}
+
+div#send {
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: center;
+}
+.btn {
+    margin-right: 8px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+input[type="text"], textarea, select, option {
+    font-size: 1.2rem;
 }
 
 input[type="submit"] {
+    margin-left: auto;
+    margin-right: auto;
     width: 250px;
     font-size: 1.6em;
 }
-

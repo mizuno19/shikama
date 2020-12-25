@@ -77,6 +77,11 @@ function create_id($dbo) {
     return null;
 }
 
+// 連絡先区分の取得
+function get_phone_classes($dbo) {
+    return $dbo->query("SELECT 区分ID, 区分名 FROM 連絡先区分")->fetchAll(PDO::FETCH_ASSOC);
+}
+
 // データベースへ接続しPDOインスタンスを返す
 function dbconnect($dsn) {
     $pdo = null;

@@ -70,6 +70,6 @@ input[type="button"]:hover {
 
 /* 全ページのmainセクションの設定 */
 #main {
-    border: 1px #f00 solid;
+    /* border: 1px #f00 solid; */
     clear: both;
 }
