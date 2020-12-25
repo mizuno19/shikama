@@ -69,7 +69,6 @@ foreach ($classes as $class) {
     $phone_classes_id .= '"' . $class['区分ID'] . '",';
     $phone_classes .= '"' . $class['区分名'] . '",';
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -94,105 +93,74 @@ foreach ($classes as $class) {
 <section id="main">
 
 <?php
-$err_flag = false;
-
-// POSTでデータが送信されていれば登録処理
+// POSTでデータが送信されていれば登録確認処理
 if (isset($_POST['SEND'])) {
-    // 登録確認処理
 ?>
-    <h2>●登録内容確認</h2>
-    <form action="" method="POST">
-        <fieldset>
-        <legend>顧客情報</legend>
-        <?php
-        if (empty($_POST['SEI'])) { 
-            $err_flag = true; ?>
-            <label>姓：<input value="<?= $_POST['SEI'] ?>" type="text" name="SEI" size="10" maxlength="20"></label>
-        <?php } else { ?>
-            <label>姓：<input value="<?= $_POST['SEI'] ?>" type="hidden" name="SEI"><?= $_POST['SEI'] ?></label><br>
-        <?php } ?>
-        <?php
-        if (empty($_POST['MEI'])) {
-            $err_flag = true; ?>
-            <label>名：<input value="<?= $_POST['MEI'] ?>" type="text" name="MEI" size="10" maxlength="20"></label>
-        <?php } else { ?>
-            <label>名：<input value="<?= $_POST['MEI'] ?>" type="hidden" name="MEI"><?= $_POST['MEI'] ?></label><br>
-        <?php } ?>
-        <?php
-        if (empty($_POST['KANASEI'])) {
-            $err_flag = true; ?>
-            <label>セイ：<input value="<?= $_POST['KANASEI'] ?>" type="text" name="KANASEI" size="10" maxlength="20"></label><br>
-        <?php } else { ?>
-            <label>セイ：<input value="<?= $_POST['KANASEI'] ?>" type="hidden" name="KANASEI"><?= $_POST['KANASEI'] ?></label><br>
-        <?php } ?>
-        <?php
-        if (empty($_POST['KANAMEI'])) {
-            $err_flag = true; ?>
-            <label>メイ：<input value="<?= $_POST['KANAMEI'] ?>" type="text" name="KANAMEI" size="10" maxlength="20"></label><br>
-        <?php } else { ?>
-            <label>メイ：<input value="<?= $_POST['KANAMEI'] ?>" type="hidden" name="KANAMEI"><?= $_POST['KANAMEI'] ?></label><br>
-        <?php } ?>
-
-        <label>好み：<input value="<?= $_POST['LIKE'] ?>" type="hidden" name="LIKE"><?= $_POST['LIKE'] ?></label><br>
-
-        <label>連絡先</label>
+<h2>登録内容確認</h2>
+<form action="" method="POST">
+<fieldset>
+<legend>顧客情報</legend>
+<div id="name">
+    <label class="check"><span>姓：</span><span><?= $_POST['SEI'] ?></span></label>
+    <label class="check"><span>名：</span><span><?= $_POST['MEI'] ?></span></label>
+    <input value="<?= $_POST['SEI'] ?>" type="hidden" name="SEI">
+    <input value="<?= $_POST['MEI'] ?>" type="hidden" name="MEI">
+</div>
+<div id="kana">
+    <label class="check"><span>セイ：</span><span><?= $_POST['KANASEI'] ?></span></label>
+    <label class="check"><span>メイ：</span><span><?= $_POST['KANAMEI'] ?></span></label>
+    <input value="<?= $_POST['KANASEI'] ?>" type="hidden" name="KANASEI">
+    <input value="<?= $_POST['KANAMEI'] ?>" type="hidden" name="KANAMEI">
+</div>
+<div id="like">
+    <label class="check"><span>備考(好みなど)：</span><span><?= $_POST['LIKE'] ?></span></label>
+    <input value="<?= $_POST['LIKE'] ?>" type="hidden" name="LIKE">
+</div>
+<div id="phone">
+    <label class="check"><span>連絡先：</span>
 <?php
-
-    // 電話番号と区分を一つの配列にする
-    if (!empty($_POST['PHONE'])) {
-        $phones = array();
-        $i = 0;
-        foreach ($_POST['PHONE'] as $value) {
-            $pclass = $_POST['PHONECLASS'][$i];
-            $phones += array($i => array($value, $pclass));
-            $i++;
-        }
-
-        foreach ($phones as $phone) {
+    // 取得したデータをすべて表示
+    $i = 0;
+    $temp_phone = '';
+    foreach ($_POST['PHONE'] as $phone) {
+        $temp_phone .= $phone . "," . $_POST['PHONECLASS'][$i] . ";";
 ?>
-            <input value="<?= $phone[0] ?>" type="hidden" name="PHONE[]">
-            <input value="<?= $phone[1] ?>" type="hidden" name="PHONECLASS[]">
-            <p><?= $phone[0] ?>(<script>document.write(phoneClasses[<?= ($phone[1] - 1) ?>]);</script>)</p>
+        <span><?= $phone ?> (<script>document.write(phoneClasses[<?= ($_POST['PHONECLASS'][$i] - 1) ?>]);</script>)</span>
+        <input value="<?= $phone ?>" type="hidden" name="PHONE[]">
+        <input value="<?= $_POST['PHONECLASS'][$i] ?>" type="hidden" name="PHONECLASS[]">
 <?php
-        }
-    } else {
-        $err_flag = true;
+        $i++;
     }
-    
-    // 生年月日と続柄を一つの配列にする
-    if (!empty($_POST['BIRTHDAY'])) {
-        $birthday = array();
-        $i = 0;
-        foreach ($_POST['BIRTHDAY'] as $value) {
-            $brelation = $_POST['RBIRTHDAY'][$i];
-            $birthday += array($i => array($value, $brelation));
-            $i++;
-        }
-
-        foreach ($birthday as $birth) {
+    setcookie('PHONE', $temp_phone);
 ?>
-            <input value="<?= $birth[0] ?>" type="hidden" name="BIRTHDAY[]">
-            <input value="<?= $birth[1] ?>" type="hidden" name="RBIRTHDAY[]">
-            <p><?= $birth[0] ?>(<?= $birth[1] ?>])</p>
+</div>
+<div id="birthday">
+    <label class="check"><span>生年月日：</span>
 <?php
-        }
-    }
-
-    if ($err_flag) echo "入力項目にエラーがあります";
+    // 取得したデータをすべて表示
+    $i = 0;
+    $temp_birthday = '';
+    foreach ($_POST['BIRTHDAY'] as $birthday) {
+        $temp_birthday .= $birthday . "," . $_POST['RBIRTHDAY'][$i] . ";";
 ?>
-    </fieldset>
-    <?php if ($err_flag) { ?>
-        <input type="submit" name="SEND" value="確　認">
-    <?php } else { ?>
-        <input type="submit" name="REGIST" value="登　録">
-    <?php } ?>
+        <span><?= $birthday ?> (<?= $_POST['RBIRTHDAY'][$i] ?>)</span>
+        <input value="<?= $birthday ?>" type="hidden" name="BIRTHDAY[]">
+        <input value="<?= $_POST['RBIRTHDAY'][$i] ?>" type="hidden" name="RBIRTHDAY[]">
+<?php
+        $i++;
+    }
+    setcookie('BIRTHDAY', $temp_birthday);
+?>
+</fieldset>
+<div id="send">
+    <input type="submit" name="REGISTER" value="登　録">
+</div>
 </form>
 
 <?php
 } else if(isset($_POST['REGISTER'])) {
     // 登録処理
-    // 登録確認処理
-    $err_flag = false;      // エラーフラグ
+
     $forms = array();       // 空の配列を準備
     // 列名をキーにして連想配列を作成
     foreach ($_POST as $key => $value) {
@@ -206,14 +174,6 @@ if (isset($_POST['SEND'])) {
     }
     $forms = array('ID' => $id) + $forms;
 
-    if (empty($forms['SEI']) || empty($forms['MEI'])) {
-        $err_flag = true;
-    }
-
-    if (empty($forms['KANASEI']) || empty($forms['KANAMEI'])) {
-        $err_flag = true;
-    }
-
     // 電話番号と区分を一つの配列にする
     if (!empty($forms['PHONE'])) {
         $phone = array();
@@ -223,9 +183,8 @@ if (isset($_POST['SEND'])) {
             $phone += array($i => array($value, $pclass));
             $i++;
         }
-    } else {
-        $err_flag = true;
-    }
+    } 
+
     // 生成した配列をPHONEへ代入
     $forms['PHONE'] = $phone;
     // 区分は必要なくなるので削除
@@ -246,10 +205,61 @@ if (isset($_POST['SEND'])) {
     // 続柄は必要なくなるので削除
     unset($forms['RBIRTHDAY']);
 
-    if ($err_flag) echo "入力項目にエラーがあります";
-
     // データベースへ登録
     insert_clients($dbo, $forms);
+
+    // クッキーを削除
+    setcookie("PHONE", "", time() - 60);
+    setcookie("BIRTHDAY", "", time() - 60);
+?>
+<h2>登録完了</h2>
+<a href="visit.php?ID=<?= $id ?>"><button type="button">来店情報登録</button></a>
+<fieldset>
+<legend>登録情報</legend>
+<div id="name">
+    <span>氏名：</span>
+    <span class="register">
+        <?= $_POST['SEI'] ?>　<?= $_POST['MEI'] ?> 様
+    </span>
+</div>
+<div id="kana">
+    <span>フリガナ：</span>
+    <span class="register">
+        <?= $_POST['KANASEI'] ?>　<?= $_POST['KANAMEI'] ?> 様
+    </span>
+</div>
+<div id="like">
+    <span>備考(好みなど)：</span>
+    <span class="register"><?= $_POST['LIKE'] ?></span>
+</div>
+<div id="phone">
+    <span>連絡先：</span>
+<?php
+    // 取得したデータをすべて表示
+    $i = 0;
+    foreach ($_POST['PHONE'] as $phone) {
+?>
+        <span class="register"><?= $phone ?> (<script>document.write(phoneClasses[<?= ($_POST['PHONECLASS'][$i] - 1) ?>]);</script>)</span>
+<?php
+        $i++;
+    }
+?>
+</div>
+<div id="birthday">
+    <span>生年月日：</span>
+<?php
+    // 取得したデータをすべて表示
+    $i = 0;
+    foreach ($_POST['BIRTHDAY'] as $birthday) {
+?>
+        <span class="register"><?= $birthday ?> (<?= $_POST['RBIRTHDAY'][$i] ?>)</span>
+<?php
+        $i++;
+    }
+?>
+</fieldset>
+
+<?php
 } else {
     // 登録フォームの表示
 ?>
@@ -270,30 +280,13 @@ if (isset($_POST['SEND'])) {
     <div id="phone">
         <button class="btn" type="button" onClick="addChildNodes('phone_list')">＋</button>
         <span>連絡先：</span>
-
-        <div id="phone_list">
-            <div id="phone1">
-                <button class="btn" type="button" onClick="removeChildNodes('phone_list', 'phone1')">－</button><!--
-                --><input value="08011112222" type="text" name="PHONE[]" size="10" maxlength="11">
-                <span>　区分：</span><select name="PHONECLASS[]"><script>
-                    for (i = 0; i < phoneClasses.length; i++) {
-                        document.write("<option value=" + phoneClassesId[i] + ">" + phoneClasses[i] + "</option>");
-                    }
-                </script></select>
-            </div>
-        </div>
+        <div id="phone_list"></div>
     </div>
 
     <div id="birthday">
         <button class="btn" type="button" onClick="addChildNodes('birthday_list')">＋</button>
         <span>生年月日：</span>
-        <div id="birthday_list">
-            <div id="birth1">
-                <button class="btn" type="button" onClick="removeChildNodes('birthday_list', 'birth1')">－</button><!--
-                --><input value="1979/01/01" type="text" name="BIRTHDAY[]" size="10">
-                <span>　続柄：</span><input value="本人" type="text" name="RBIRTHDAY[]" size="5">
-            </div>
-        </div>
+        <div id="birthday_list"></div>
     </div>
 </fieldset>
 <div id="send">
@@ -308,6 +301,43 @@ $dbo = null;
 
 </section>
 </div>
+<?php
+    $ck_phone = '';
+    $ck_birthday = '';
+    if (isset($_COOKIE['PHONE'])) {
+        $ck_phone = $_COOKIE['PHONE'];
+    }
+    if (isset($_COOKIE['BIRTHDAY'])) {
+        $ck_birthday = $_COOKIE['BIRTHDAY'];
+    }
+
+    if (!empty($ck_phone) && !$ck_phone === "") {
+        $tmp_phone = explode(';', $ck_phone);
+        foreach ($tmp_phone as $d) {
+            list($key, $value) = explode(',', $d);
+            $phone_list[$key] = $value;
+        }
+    }
+
+    if (!empty($ck_birthday) && !$ck_birthday === "") {
+        $tmp_birthday = explode(';', $ck_birthday);
+        foreach ($tmp_birthday as $d) {
+            list($key, $value) = explode(',', $d);
+            $birthday_list[$key] = $value;
+        }
+    }
+
+    var_dump($phone_list);
+    var_dump($birthday_list);
+?>
+
 <script src="js/lib.js"></script>
+<script>
+<?php
+?>
+    addChildNodes("phone_list", "", "");
+    addChildNodes("birthday_list", "", "");
+</script>
+
 </body>
 </html>

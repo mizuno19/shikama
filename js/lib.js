@@ -10,7 +10,7 @@ function removeChildNodes(obj, rmObj) {
 }
 
 // +が押されたら入力ボックスを増やす関数
-function addChildNodes(obj) {
+function addChildNodes(obj, d1, d2) {
     // 親要素の取得
     const parent = document.getElementById(obj);
     //console.log(id, parent);  // 確認用
@@ -24,12 +24,16 @@ function addChildNodes(obj) {
     // 指定された要素により処理を分岐
     if (obj === "phone_list") {
         // 連絡先の場合
-        // ダミーデータの生成
-        var tel = "08011112222";
+        var tel = d1;
+        var rmId = 0;
 
+        if (parent.childElementCount) {
+            rmId = parent.childElementCount;
+        }
 
         // 削除用に使うIDの生成
-        const rmId = "phone" + (parseInt(parent.childElementCount) + 1);
+        rmId = "phone" + (rmId + 1);
+        console.log(rmId);
 
         // 追加する要素の生成
         // ラベルのIDをセット
@@ -49,6 +53,9 @@ function addChildNodes(obj) {
         for (i = 0; i < phoneClasses.length; i++) {
             const classIdChild = document.createElement("option");
             classIdChild.setAttribute("value", phoneClassesId[i]);
+            if (d2 - 1 === i) {
+                classIdChild.setAttribute("selected", "selected");
+            }
             classIdChild.innerHTML = phoneClasses[i];
             classId.append(classIdChild);
         }
@@ -57,7 +64,7 @@ function addChildNodes(obj) {
         const rmlink = document.createElement("button");
         rmlink.setAttribute("class", "btn");
         rmlink.setAttribute("type", "button");
-        rmlink.setAttribute("onClick", "removeChildNodes('phone', '" + rmId + "')");
+        rmlink.setAttribute("onClick", "removeChildNodes('" + obj + "', '" + rmId + "')");
         rmlink.innerHTML = "－";
 
         // 親要素のラベルにspanとテキストボックスを追加
@@ -107,7 +114,7 @@ function addChildNodes(obj) {
         const rmlink = document.createElement("button");
         rmlink.setAttribute("class", "btn");
         rmlink.setAttribute("type", "button");
-        rmlink.setAttribute("onClick", "removeChildNodes('birthday', '" + rmId + "');");
+        rmlink.setAttribute("onClick", "removeChildNodes('" + obj + "', '" + rmId + "');");
         rmlink.innerHTML = "－";
 
         // 親要素のラベルにspanとテキストボックスを追加
