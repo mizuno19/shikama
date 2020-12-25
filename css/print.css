@@ -13,14 +13,12 @@ body{
     font-size: 30px;
 }
 .page{
-    page-break-before: always; 
-    page-break-after: always;
     width: 80%;
     margin-left: auto;
     margin-right: auto;
 }
-p{
-    font-size: 24px;
+p,div{
+    font-size: 30px;
 }
 .prev{
     margin: auto;
@@ -39,6 +37,10 @@ p{
     font-size: 2rem;
     text-align: center;
 }
+.details{
+    clear: both;
+    overflow: hidden;
+}
 .rem{
     width: 85%;
     margin-top: 20px;
@@ -47,11 +49,13 @@ p{
     margin-right: auto;
 }
 .date{
-    width: 35%;
+    width: 37%;
     float: left;
     text-align: center;
     margin-top: 20px;
     margin-bottom: 20px;
+    overflow: hidden;
+    height: 100%;
 }
 .menu{
     width: 60%;
