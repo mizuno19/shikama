@@ -113,7 +113,7 @@ if (isset($_POST['SEND'])) {
     <input value="<?= $_POST['KANAMEI'] ?>" type="hidden" name="KANAMEI">
 </div>
 <div id="like">
-    <label class="check"><span>備考(好みなど)：</span><span><?= $_POST['LIKE'] ?></span></label>
+    <label class="check"><span>備考(好みなど)：</span><span><?= htmlspecialchars($_POST['LIKE'], ENT_QUOTES, 'UTF-8') ?></span></label>
     <input value="<?= $_POST['LIKE'] ?>" type="hidden" name="LIKE">
 </div>
 <div id="phone">
