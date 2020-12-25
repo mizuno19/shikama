@@ -1,6 +1,7 @@
 @charset "utf-8";
 body{
     padding-bottom: 100px;
+    height: 0;
 }
 .center{
     text-align: center;
@@ -66,14 +67,15 @@ p,div{
 input[type="submit"]{
     margin-bottom: 20px;
 }
-@page{
-    margin: 100px;
-    size: auto;
-}
-@page :first {
-    margin-top: 50px;
-  }
-@media print{
+
+@media print {
+    @page{
+        margin: 20px;
+        size: A4;
+    }
+    @page :first {
+        padding-top: 150px;
+    }
     .noprint{
         display:none;
     }
