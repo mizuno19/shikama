@@ -18,8 +18,9 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
         <?php 
         $n = 0;     //印刷予定枚数
         $i = 0;     //印刷実行数
+        $no='three';
         $id = $_GET['ID'];
-        $no = $_GET['no'];
+        if(isset($_GET['no'])) $no = $_GET['no'];
         $sql = "SELECT 顧客.顧客ID, 顧客.姓, 顧客.名, 顧客.セイ, 顧客.メイ, 顧客.備考,来店記録.日時,来店記録.メニュー FROM 顧客 left join 来店記録 on 顧客.顧客ID=来店記録.顧客ID where 顧客.顧客ID='${id}' order by 来店記録.日時 desc";
         $res = execute($dbo, $sql); 
         $db_data = $res->fetchAll(PDO::FETCH_ASSOC);
@@ -30,8 +31,9 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
         印刷範囲<br><select name='no'>
             <option value='one'>1回分</option>
             <option value='two'>2回分</option>
-            <option value='three'>3回分</option>
+            <option value='three' selected>3回分</option>
             </select></div>
+            <div  class="center"><input type="submit" value="確定" class="noprint"></div>
             <?php 
             if($no=='one'){ 
                 $n=1;
@@ -39,6 +41,8 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
                 $n=2;
             }else if($no=='three'){
                 $n=3;
+            }else{
+                $n=0;
             }
             ?>
                 <div class="page">
@@ -74,11 +78,10 @@ if (empty($dbo)) die('Error: データベースに接続できません');?>
                     }
                     ?></div>
                     </div>
+                    <hr>
                 <?php } ?>
-                <hr>
                 <?php $i++; }?>
                 </div>
-                <div  class="center"><input type="submit" value="印刷" class="noprint"></div>
         </form>   
     </body>
 </html>
