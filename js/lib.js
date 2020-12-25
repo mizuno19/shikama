@@ -53,7 +53,7 @@ function addChildNodes(obj, d1, d2) {
         for (i = 0; i < phoneClasses.length; i++) {
             const classIdChild = document.createElement("option");
             classIdChild.setAttribute("value", phoneClassesId[i]);
-            if (d2 - 1 === i) {
+            if ((d2 - 1) === i) {
                 classIdChild.setAttribute("selected", "selected");
             }
             classIdChild.innerHTML = phoneClasses[i];
@@ -82,8 +82,10 @@ function addChildNodes(obj, d1, d2) {
         if (mm < 10) mm = "0" + mm;
         if (dd < 10) dd = "0" + dd;
         var dat = yy + "/" + mm + "/" + dd;
+        dat = d1;
         var rSrc = [ "妻", "子", "友人", "恋人", "同僚", "上司", "部下", ];
         var r = rSrc[Math.floor(Math.random() * rSrc.length)];
+        r = d2;
 
 
         // 削除用に使うIDの生成

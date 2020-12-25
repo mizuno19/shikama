@@ -121,9 +121,7 @@ if (isset($_POST['SEND'])) {
 <?php
     // 取得したデータをすべて表示
     $i = 0;
-    $temp_phone = '';
     foreach ($_POST['PHONE'] as $phone) {
-        $temp_phone .= $phone . "," . $_POST['PHONECLASS'][$i] . ";";
 ?>
         <span><?= $phone ?> (<script>document.write(phoneClasses[<?= ($_POST['PHONECLASS'][$i] - 1) ?>]);</script>)</span>
         <input value="<?= $phone ?>" type="hidden" name="PHONE[]">
@@ -131,7 +129,6 @@ if (isset($_POST['SEND'])) {
 <?php
         $i++;
     }
-    setcookie('PHONE', $temp_phone);
 ?>
 </div>
 <div id="birthday">
@@ -139,9 +136,7 @@ if (isset($_POST['SEND'])) {
 <?php
     // 取得したデータをすべて表示
     $i = 0;
-    $temp_birthday = '';
     foreach ($_POST['BIRTHDAY'] as $birthday) {
-        $temp_birthday .= $birthday . "," . $_POST['RBIRTHDAY'][$i] . ";";
 ?>
         <span><?= $birthday ?> (<?= $_POST['RBIRTHDAY'][$i] ?>)</span>
         <input value="<?= $birthday ?>" type="hidden" name="BIRTHDAY[]">
@@ -149,7 +144,6 @@ if (isset($_POST['SEND'])) {
 <?php
         $i++;
     }
-    setcookie('BIRTHDAY', $temp_birthday);
 ?>
 </fieldset>
 <div id="send">
@@ -207,10 +201,6 @@ if (isset($_POST['SEND'])) {
 
     // データベースへ登録
     insert_clients($dbo, $forms);
-
-    // クッキーを削除
-    setcookie("PHONE", "", time() - 60);
-    setcookie("BIRTHDAY", "", time() - 60);
 ?>
 <h2>登録完了</h2>
 <a href="visit.php?ID=<?= $id ?>"><button type="button">来店情報登録</button></a>
@@ -263,28 +253,29 @@ if (isset($_POST['SEND'])) {
 } else {
     // 登録フォームの表示
 ?>
-<form action="" method="POST">
+<form action="" method="POST" onSubmit="sendForm()">
 <fieldset>
     <legend>顧客情報</legend>
     <div id="name">
-        <label><span>姓：</span><input value="船橋" type="text" name="SEI" size="8" maxlength="20"></label>
-        <label><span>名：</span><input value="太郎" type="text" name="MEI" size="8" maxlength="20"></label>
+        <label><span>姓：</span><input value="" type="text" name="SEI" size="8" maxlength="20"></label>
+        <label><span>名：</span><input value="" type="text" name="MEI" size="8" maxlength="20"></label>
     </div>
     <div id="kana">
-        <label><span>セイ：</span><input value="フナバシ" type="text" name="KANASEI" size="8" maxlength="40" required="required"></label>
-        <label><span>メイ：</span><input value="タロウ" type="text" name="KANAMEI" size="8" maxlength="40" required="required"></label>
+        <label><span>セイ：</span><input value="" type="text" name="KANASEI" size="8" maxlength="40" required="required"></label>
+        <label><span>メイ：</span><input value="" type="text" name="KANAMEI" size="8" maxlength="40" required="required"></label>
     </div>
     <div id="like">
-        <label><span>備考(好みなど)：</span><textarea name="LIKE">好みのデータ</textarea></label>
+        <label><span>備考(好みなど)：</span><textarea name="LIKE">好きなもの：
+嫌いなもの：</textarea></label>
     </div>
     <div id="phone">
-        <button class="btn" type="button" onClick="addChildNodes('phone_list')">＋</button>
+        <button class="btn" type="button" onClick="addChildNodes('phone_list', '', '')">＋</button>
         <span>連絡先：</span>
         <div id="phone_list"></div>
     </div>
 
     <div id="birthday">
-        <button class="btn" type="button" onClick="addChildNodes('birthday_list')">＋</button>
+        <button class="btn" type="button" onClick="addChildNodes('birthday_list', '', '')">＋</button>
         <span>生年月日：</span>
         <div id="birthday_list"></div>
     </div>
@@ -301,43 +292,10 @@ $dbo = null;
 
 </section>
 </div>
-<?php
-    $ck_phone = '';
-    $ck_birthday = '';
-    if (isset($_COOKIE['PHONE'])) {
-        $ck_phone = $_COOKIE['PHONE'];
-    }
-    if (isset($_COOKIE['BIRTHDAY'])) {
-        $ck_birthday = $_COOKIE['BIRTHDAY'];
-    }
-
-    if (!empty($ck_phone) && !$ck_phone === "") {
-        $tmp_phone = explode(';', $ck_phone);
-        foreach ($tmp_phone as $d) {
-            list($key, $value) = explode(',', $d);
-            $phone_list[$key] = $value;
-        }
-    }
-
-    if (!empty($ck_birthday) && !$ck_birthday === "") {
-        $tmp_birthday = explode(';', $ck_birthday);
-        foreach ($tmp_birthday as $d) {
-            list($key, $value) = explode(',', $d);
-            $birthday_list[$key] = $value;
-        }
-    }
-
-    var_dump($phone_list);
-    var_dump($birthday_list);
-?>
-
 <script src="js/lib.js"></script>
 <script>
-<?php
-?>
     addChildNodes("phone_list", "", "");
     addChildNodes("birthday_list", "", "");
 </script>
-
 </body>
 </html>
