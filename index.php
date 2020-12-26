@@ -40,15 +40,22 @@ if (isset($_GET['NEXT']) && is_numeric($_GET['NEXT'])) {
         <input type="submit" name="SEARCH_SEND" value="検索">
     </form>
 </div>
+
+<form action="delete.php" method="POST">
+<div id="delete_box">
+    <input type="submit" name="DELETE" value="削除">
+</div>
 <div id="next">
     <p>
+    <a href="?NEXT=0"><button type="button">&lt;&lt;</button></a>
 <?php
     for ($i = 0; $i < ($max / $m); $i++) {
 ?>
-    <a href="?NEXT=<?= $i * $m ?>"><?= ($i + 1) ?></a>
+    <a href="?NEXT=<?= $i * $m ?>"><button type="button"><?= ($i + 1) ?></button></a>
 <?php
     }
 ?>
+    <a href="?NEXT=<?= $max - $m ?>"><button type="button">&gt;&gt;</button></a>    
     </p>
 </div>
 <section id="main">
@@ -97,8 +104,13 @@ if (empty($res)) {
             <div class="name"><a href="print.php?ID=<?= $id ?>"><?= $name ?></a></div>
         </div>
         </label>
-        <div class="visit">
-            <a href="./visit.php?ID=<?= $id ?>"><button>来店情報登録</button></a>
+        <div class="btn_area">
+            <div class="visit">
+                <a href="./visit.php?ID=<?= $id ?>"><button type="button">来店登録</button></a>
+            </div>
+            <div class="edit">
+                <a href="./edit.php?ID=<?= $id ?>"><button type="button">編集</button></a>
+            </div>
         </div>
     </div>
 <?php
@@ -108,6 +120,7 @@ if (empty($res)) {
 }
 ?>
     </div>
+</form>
 </section>
 </div>
 </body>

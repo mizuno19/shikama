@@ -26,8 +26,19 @@ div#search_box {
     font-size: 1.2rem;
 }
 
+#delete_box {
+    float: left;
+}
+#delete_box input {
+    width: 80px;
+    margin-top: 5px;
+    margin-left: 8px;
+    margin-right: 0;
+}
+
 #next {
     width: 100%;
+    border-bottom: 1px solid #000;
 }
 #next p {
     font-size: 1.2rem;
@@ -35,18 +46,24 @@ div#search_box {
 #next p a:first-child {
     margin-left: 1.5rem;
 }
-#next p a {
-    margin-left: 4px;
-    margin-right: 4px;
+#next p a button {
+    margin: 8px 2px;
+    border-radius: 50%;
 }
 
 #client_list {
     height: 100%;
 }
 #client_list .client {
+    position: relative;
     width: 100%;
     border: #9f9f9f solid;
     border-width: 0 0 1px 0;
+    overflow: hidden;
+}
+#client_list .client label {
+    display: block;
+    float: left;
     overflow: hidden;
 }
 #client_list .client .id,
@@ -74,25 +91,33 @@ div#search_box {
 }
 #client_list .client .name_box {
     float: left;
-    width: 200px;
+    width: 250px;
     overflow: hidden;
 }
 #client_list .client .kana {
     font-size: 0.8rem;
 }
-#client_list .client .name {
+#client_list .client .name a {
     font-size: 1.2rem;
 }
-#client_list .client .visit {
-    position: relative;
+#client_list .client .btn_area {
     float: left;
 }
-#client_list .client .visit a {
-    position: absolute;
-    top: 8px;
-    width: 180px;
+#client_list .client .visit,
+#client_list .client .edit {
+    margin: 0 4px;
+    float: left;
+    width: 150px;
 }
-#client_list .client .visit a button {
-    width: 180px;
-    font-size: 1.2rem;
+#client_list .client .edit {
+    width: 100px;
+}
+#client_list .client .visit a,
+#client_list .client .edit a {
+    position: relative;
+    top: 8px;
+}
+#client_list .client .visit a button,
+#client_list .client .edit a button {
+        width: 100%;
 }
