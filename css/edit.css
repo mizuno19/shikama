@@ -1,0 +1,113 @@
+h2:before {
+    content: "■";
+}
+h2 {
+    font-size: 1.2rem;
+}
+
+fieldset {
+    width: 95%;
+    margin: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fff;
+    color: #000;
+    border: 3px solid #af3f3f;
+}
+fieldset legend {
+    padding: 0 12px;
+}
+fieldset div {
+    clear: both;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+fieldset div label span {
+    margin-top: 2px;
+}
+fieldset #name label,
+fieldset #kana label {
+    width: 210px;
+    float: left;
+}
+fieldset #name label.check,
+fieldset #kana label.check {
+    clear: both;
+}
+fieldset #name label span,
+fieldset #kana label span {
+    display: block;
+    float: left;
+    width: 80px;
+    text-align: right;
+}
+fieldset #name label.check span,
+fieldset #kana label.check span {
+    width: auto;
+}
+fieldset #name label span + span,
+fieldset #kana label span + span {
+    display: block;
+    float: left;
+    width: 200px;
+    padding-left: 0.5rem;
+    text-align: left;
+}
+fieldset #like label span,
+fieldset #menu label span {
+    display: block;
+    width: 100%;
+}
+fieldset #like label textarea,
+fieldset #menu label textarea {
+        margin-left: 3.7rem;
+    width: 21rem;
+    height: 5rem;
+}
+fieldset #phone #phone_list div,
+fieldset #birthday #birthday_list div {
+    margin: 0;
+}
+fieldset #phone label.check span,
+fieldset #birthday label.check span {
+    display: block;
+}
+
+div#send {
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.btn {
+    margin-right: 8px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+input[type="text"], textarea, select, option {
+    font-size: 1.2rem;
+}
+
+input[type="submit"] {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    width: 250px;
+    font-size: 1.6em;
+}
+
+.check {
+    font-size: 1.2rem;
+}
+/* +は隣接、~は間接(その要素以降すべて) */
+.check span + span,
+.check span + span ~ span {
+    font-weight: bold;
+}
+
+.register {
+    display: block;
+    font-weight: bold;
+}
