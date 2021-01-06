@@ -47,6 +47,11 @@ function addChildNodes(obj, d1, d2) {
         child.setAttribute("name", "PHONE[]");
         child.setAttribute("size", "10");
 
+        const del_child = document.createElement("input");
+        del_child.setAttribute("value", tel);
+        del_child.setAttribute("type", "hidden");
+        del_child.setAttribute("name", "DPHONE[]");
+
         // 区分のセレクトボックス
         const classId = document.createElement("select");
         classId.setAttribute("name", "PHONECLASS[]");
@@ -70,6 +75,7 @@ function addChildNodes(obj, d1, d2) {
         // 親要素のラベルにspanとテキストボックスを追加
         label.append(rmlink);
         label.append(child);
+        label.append(del_child);
         label.append(elm1Label)
         label.append(classId);
 

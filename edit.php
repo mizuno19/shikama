@@ -6,6 +6,80 @@ require_once 'lib/dblib.php';
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
 
+// 更新処理
+if (isset($_POST['UPDATE'])) {
+    $forms = array();       // 空の配列を準備
+    // 列名をキーにして連想配列を作成
+    foreach ($_POST as $key => $value) {
+        $forms[$key] = $value;
+    }
+
+    var_dump($forms);
+
+    $errnum = 0;
+    $kokyaku_sql = "UPDATE 顧客 SET 姓=:sei, 名=:mei, セイ=:k_sei, メイ=:k_mei, 備考=:like WHERE 顧客ID=:id";
+    $kokyaku = $dbo->prepare($kokyaku_sql);
+    $kokyaku->bindParam(":id", $forms['ID']);
+    $kokyaku->bindParam(":sei", $forms['SEI']);
+    $kokyaku->bindParam(":mei", $forms['MEI']);
+    $kokyaku->bindParam(":k_sei", $forms['KANASEI']);
+    $kokyaku->bindParam(":k_mei", $forms['KANAMEI']);
+    $kokyaku->bindParam(":like", $forms['LIKE']);
+    $res = $kokyaku->execute();
+    if (!$res) $errnum++;
+
+    // 電話番号が入っていない場合はその項目を削除する
+    $phone_sql = "UPDATE 電話番号 SET 区分ID=:phoneclass,電話番号=:phone WHERE 顧客ID=:id AND 電話番号=:dphone";
+    $phone = $dbo->prepare($phone_sql);
+    $phone_new_sql = "INSERT INTO 電話番号 VALUES (:id, :phoneclass, :phone)";
+    $phone_new = $dbo->prepare($phone_new_sql);
+    $phone_del_sql = "DELETE FROM 電話番号 WHERE 顧客ID=:id AND 電話番号=:dphone";
+    $phone_del = $dbo->prepare($phone_del_sql);
+
+    $del_phones = array();
+    $i = 0;
+    foreach ($forms['PHONE'] as $tel) {
+        if (empty($tel)) {
+            $phone_del->bindParam(":id", $forms['ID']);
+            $phone_del->bindParam(":dphone", $forms['DPHONE'][$i]);
+            $res = $phone_del->execute();
+        } else {
+            // データが存在しているか確認
+            $sql = "SELECT COUNT(*) AS count FROM 電話番号 WHERE 顧客ID=:id AND 電話番号=:phone";
+            $stmt = $dbo->prepare($sql);
+            $stmt->bindParam(":id", $forms['ID']);
+            $stmt->bindParam(":phone", $forms['DPHONE'][$i]);
+            $stmt->execute();
+            $res = $stmt->fetchAll()[0]['count'];
+            $stmt = null;
+
+            // すでに登録されている番号だったかチェック
+            if ($res === 0) {
+                // 新規追加
+                $phone_new->bindParam(":id", $forms['ID']);
+                $phone_new->bindParam(":phoneclass", $forms['PHONECLASS'][$i]);
+                $phone_new->bindParam(":phone", $tel);
+                $res = $phone_new->execute();
+            } else {
+                // 更新処理
+                $phone->bindParam(":id", $forms['ID']);
+                $phone->bindParam(":phoneclass", $forms['PHONECLASS'][$i]);
+                $phone->bindParam(":phone", $tel);
+                $phone->bindParam(":dphone", $forms['DPHONE'][$i]);
+                $res = $phone->execute();
+            }
+        }
+        $i++;
+    }
+
+
+    // 生年月日が入っていない場合はその項目を削除する
+
+
+
+}
+
+
 // 区分データの取得
 $classes = get_phone_classes($dbo);
 // JavaScriptで利用するためカンマ区切りのデータにする
@@ -64,6 +138,7 @@ $client_visit = $res->fetchAll(PDO::FETCH_ASSOC);
 <section id="main">
 
 <form action="" method="POST" onSubmit="sendForm()">
+<input value="<?= $client[0]['顧客ID'] ?>" type="hidden" name="ID">
 <fieldset>
     <legend>顧客情報</legend>
     <div id="name">
@@ -107,7 +182,7 @@ $client_visit = $res->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </fieldset>
 <div id="send">
-    <input type="submit" name="SEND" value="確　認">
+    <input type="submit" name="UPDATE" value="更　新">
 </div>
 </form>
 
