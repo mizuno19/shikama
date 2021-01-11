@@ -47,11 +47,6 @@ function addChildNodes(obj, d1, d2) {
         child.setAttribute("name", "PHONE[]");
         child.setAttribute("size", "10");
 
-        const del_child = document.createElement("input");
-        del_child.setAttribute("value", tel);
-        del_child.setAttribute("type", "hidden");
-        del_child.setAttribute("name", "DPHONE[]");
-
         // 区分のセレクトボックス
         const classId = document.createElement("select");
         classId.setAttribute("name", "PHONECLASS[]");
@@ -75,7 +70,6 @@ function addChildNodes(obj, d1, d2) {
         // 親要素のラベルにspanとテキストボックスを追加
         label.append(rmlink);
         label.append(child);
-        label.append(del_child);
         label.append(elm1Label)
         label.append(classId);
 
@@ -88,7 +82,8 @@ function addChildNodes(obj, d1, d2) {
         if (mm < 10) mm = "0" + mm;
         if (dd < 10) dd = "0" + dd;
         var dat = yy + "/" + mm + "/" + dd;
-        dat = d1;
+        [dat, id] = d1.split(/:/);
+        // console.log(dat + ", " + id);
         var rSrc = [ "妻", "子", "友人", "恋人", "同僚", "上司", "部下", ];
         var r = rSrc[Math.floor(Math.random() * rSrc.length)];
         r = d2;
@@ -101,6 +96,12 @@ function addChildNodes(obj, d1, d2) {
         // ラベルのIDをセット
         label.setAttribute("id", rmId)
         
+        // 登録IDが存在すれば追加
+        const regid = document.createElement("input");
+        regid.setAttribute("value", id);
+        regid.setAttribute("type", "hidden");
+        regid.setAttribute("name", "BID[]");
+
         // 生年月日の入力テキストボックス
         const child = document.createElement("input");
         child.setAttribute("value", dat);  // ダミーデータ
@@ -127,6 +128,7 @@ function addChildNodes(obj, d1, d2) {
 
         // 親要素のラベルにspanとテキストボックスを追加
         label.append(rmlink);
+        label.append(regid);
         label.append(child);
         label.append(elm1Label)
         label.append(rchild);

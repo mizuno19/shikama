@@ -14,7 +14,7 @@ if (isset($_POST['UPDATE'])) {
         $forms[$key] = $value;
     }
 
-    var_dump($forms);
+    //var_dump($forms);
 
     $errnum = 0;
     $kokyaku_sql = "UPDATE 顧客 SET 姓=:sei, 名=:mei, セイ=:k_sei, メイ=:k_mei, 備考=:like WHERE 顧客ID=:id";
@@ -72,13 +72,92 @@ if (isset($_POST['UPDATE'])) {
         $i++;
     }
 
-
     // 生年月日が入っていない場合はその項目を削除する
+    $birth_sql = "UPDATE 生年月日 SET 生年月日=:birth, 続柄=:rbirth WHERE 顧客ID=:id AND 登録ID=:bid";
+    $birth = $dbo->prepare($birth_sql);
+    $birth_new_sql = "INSERT INTO 生年月日 VALUES (:id, :bid, :birth, :rbirth)";
+    $birth_new = $dbo->prepare($birth_new_sql);
+    $birth_del_sql = "DELETE FROM 生年月日 WHERE 顧客ID=:id AND 生年月日=:day AND 登録ID=:bid";
+    $birth_del = $dbo->prepare($birth_del_sql);
 
+    // 削除するデータを割り出す
+    $del_birth = $forms['DBIRTHDAY'];
+    $i = 0;
+    foreach ($del_birth as $dbirth) {
+        list($dday, $bid) = explode(':', $dbirth);
+        foreach ($forms['BIRTHDAY'] as $day) {
+            if ($day == $dday) {
+                unset($del_birth[$i]);
+                break;
+            }
+        }
+        $i++;
+    }
 
+    // 削除データが存在すれば、データベースから削除
+    // echo "削除するデータ<br>";
+    // var_dump($del_birth);
+    // echo "<hr>";
+    if (!empty($del_birth)) {
+        foreach ($del_birth as $dday) {
+            list($dbirthday, $bid) = explode(':', $dday);
+            $birth_del->bindParam(":id", $forms['ID']);
+            $birth_del->bindParam(":day", $dbirthday);
+            $birth_del->bindParam(":bid", $bid);
+            $res = $birth_del->execute();
+        }
+    }
 
+    // 更新、追加処理
+    $i = 0;
+    foreach ($forms['BIRTHDAY'] as $day) {
+        if (!empty($day)) {
+            // データが存在しているか確認
+            if ($forms['BID'][$i] === 'undefined') {
+                $sql = "SELECT MAX(登録ID) AS max FROM 生年月日 WHERE 顧客ID=:id";
+                $stmt = $dbo->prepare($sql);
+                $stmt->bindParam(":id", $forms['ID']);
+                $stmt->execute();
+                $bid = $stmt->fetchAll()[0]['max'] + 1;
+                $stmt = null;
+            } else {
+                $bid = $forms['BID'][$i];
+            }
+
+            $sql = "SELECT COUNT(*) AS count FROM 生年月日 WHERE 顧客ID=:id AND 登録ID=:bid";
+            $stmt = $dbo->prepare($sql);
+            $stmt->bindParam(":id", $forms['ID']);
+            $stmt->bindParam(":bid", $bid);
+            $stmt->execute();
+            $res = $stmt->fetchAll()[0]['count'];
+            $stmt = null;
+
+            // すでに登録されているかチェック
+            if ($res === 0) {
+                // 新規追加
+                // echo "新規追加データ<br>";
+                // echo $forms['ID'] . ", " . $forms['BID'][$i] . ", " . $day . ", " . $forms['RBIRTHDAY'][$i];
+                // echo "<hr>";
+                $birth_new->bindParam(":id", $forms['ID']);
+                $birth_new->bindParam(":bid", $bid);
+                $birth_new->bindParam(":birth", $day);
+                $birth_new->bindParam(":rbirth", $forms['RBIRTHDAY'][$i]);
+                $res = $birth_new->execute();
+            } else {
+                // 更新処理
+                // echo "更新データ<br>";
+                // echo $forms['ID'] . ", " . $forms['BID'][$i] . ", " . $day . ", " . $forms['RBIRTHDAY'][$i];
+                // echo "<hr>";
+                $birth->bindParam(":id", $forms['ID']);
+                $birth->bindParam(":bid", $bid);
+                $birth->bindParam(":birth", $day);
+                $birth->bindParam(":rbirth", $forms['RBIRTHDAY'][$i]);
+                $res = $birth->execute();
+            }
+        }
+        $i++;
+    }
 }
-
 
 // 区分データの取得
 $classes = get_phone_classes($dbo);
@@ -153,12 +232,18 @@ $client_visit = $res->fetchAll(PDO::FETCH_ASSOC);
         <label><span>備考(好みなど)：</span><textarea name="LIKE"><?= $client[0]['備考'] ?></textarea></label>
     </div>
     <div id="phone">
+        <?php foreach ($client_phone as $phone) { ?>
+            <input value="<?= $phone['電話番号'] ?>" type="hidden" name="DPHONE[]">
+        <?php } ?>
         <button class="btn" type="button" onClick="addChildNodes('phone_list', '', '')">＋</button>
         <span>連絡先：</span>
         <div id="phone_list"></div>
     </div>
 
     <div id="birthday">
+        <?php foreach ($client_birth as $birth) { ?>
+            <input value="<?= $birth['生年月日'] ?>:<?= $birth['登録ID'] ?>" type="hidden" name="DBIRTHDAY[]">
+        <?php } ?>
         <button class="btn" type="button" onClick="addChildNodes('birthday_list', '', '')">＋</button>
         <span>生年月日：</span>
         <div id="birthday_list"></div>
@@ -198,7 +283,7 @@ $dbo = null;
     addChildNodes("phone_list", "<?= $phone['電話番号'] ?>", "<?= $phone['区分ID'] ?>");
 <?php } ?>
 <?php foreach ($client_birth as $birth) { ?>
-    addChildNodes("birthday_list", "<?= $birth['生年月日'] ?>", "<?= $birth['続柄'] ?>");
+    addChildNodes("birthday_list", "<?= $birth['生年月日'] ?>:<?= $birth['登録ID'] ?>", "<?= $birth['続柄'] ?>");
 <?php } ?>
 </script>
 </body>
