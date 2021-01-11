@@ -157,6 +157,32 @@ if (isset($_POST['UPDATE'])) {
         }
         $i++;
     }
+
+    // 来店情報の編集
+    $visit_sql = "UPDATE 来店記録 SET 日時=:date, 人数=:number, 続柄=:relation, メニュー=:menu WHERE 来店ID=:vid AND 顧客ID=:id";
+    $visit = $dbo->prepare($visit_sql);
+    $visit_del_sql = "DELETE FROM 来店記録 WHERE 来店ID=:vid AND 顧客ID=:id";
+    $visit_del = $dbo->prepare($visit_del_sql);
+
+    $i = 0;
+    foreach ($forms['VISITID'] as $vid) {
+        if (empty($forms['DATE'])) {
+            // 来店日時が空っぽなら削除する
+            $visit_del->bindParam(':vid', $vid);
+            $visit_del->bindParam(':id', $forms['ID']);
+            $res = $visit_del->execute();
+        } else {
+            // 更新処理
+            $visit->bindParam(':vid', $vid);
+            $visit->bindParam(':id', $forms['ID']);
+            $visit->bindParam(':date', $forms['DATE'][$i]);
+            $visit->bindParam(':number', $forms['NUMBER'][$i]);
+            $visit->bindParam(':relation', $forms['RELATION'][$i]);
+            $visit->bindParam(':menu', $forms['MENU'][$i]);
+            $res = $visit->execute();
+        }
+        $i++;
+    }
 }
 
 // 区分データの取得
@@ -189,7 +215,7 @@ $sql = "SELECT 登録ID, 生年月日, 続柄 FROM 生年月日 WHERE 顧客ID =
 $res = execute($dbo, $sql); 
 $client_birth = $res->fetchAll(PDO::FETCH_ASSOC);
 
-$sql = "SELECT 日時, 人数, 続柄, メニュー FROM 来店記録 WHERE 顧客ID = '${id}'";
+$sql = "SELECT 来店ID, 日時, 人数, 続柄, メニュー FROM 来店記録 WHERE 顧客ID = '${id}' ORDER BY 日時 DESC";
 $res = execute($dbo, $sql); 
 $client_visit = $res->fetchAll(PDO::FETCH_ASSOC);
 
@@ -216,7 +242,14 @@ $client_visit = $res->fetchAll(PDO::FETCH_ASSOC);
 </header>
 <section id="main">
 
+<?php if (isset($_POST['UPDATE'])) { ?>
+    <p id="message">更新しました。</p>
+<?php } ?>
+
 <form action="" method="POST" onSubmit="sendForm()">
+<div class="top_send">
+    <input type="submit" name="UPDATE" value="更　新">
+</div>
 <input value="<?= $client[0]['顧客ID'] ?>" type="hidden" name="ID">
 <fieldset>
     <legend>顧客情報</legend>
@@ -250,23 +283,27 @@ $client_visit = $res->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div id="visit">
+        来店情報<br>
+        <p style="font-size: 0.8em;">※日時を消すと削除します。</p>
     <?php foreach ($client_visit as $visit) { ?>
+        <hr><br>
+        <input value="<?= $visit['来店ID'] ?>" type="hidden" name="VISITID[]">
         <div id="date">
-            <label><span>日時：</span><input value="<?= $visit['日時'] ?>" type="text" name="DATE" size="16" maxlength="40" required="required"></label>
+            <label><span>日時：</span><input value="<?= $visit['日時'] ?>" type="text" name="DATE[]" size="16" maxlength="40" required="required"></label>
         </div>
         <div id="number">
-            <label><span>人数：</span><input value="<?= $visit['人数'] ?>" type="text" name="NUMBER" size="3" maxlength="3" required="required"></label>
+            <label><span>人数：</span><input value="<?= $visit['人数'] ?>" type="text" name="NUMBER[]" size="3" maxlength="3" required="required"></label>
         </div>
         <div id="relation">
-            <label><span>続柄：</span><input value="<?= $visit['続柄'] ?>" type="text" name="RELATION" size="10" maxlength="50"></label>
+            <label><span>続柄：</span><input value="<?= $visit['続柄'] ?>" type="text" name="RELATION[]" size="10" maxlength="50"></label>
         </div>
         <div id="menu">
-            <label><span>メニュー：</span><textarea name="MENU"><?= $visit['メニュー'] ?></textarea></label>
+            <label><span>メニュー：</span><textarea name="MENU[]"><?= $visit['メニュー'] ?></textarea></label>
         </div>
     <?php } ?>
     </div>
 </fieldset>
-<div id="send">
+<div class="send">
     <input type="submit" name="UPDATE" value="更　新">
 </div>
 </form>

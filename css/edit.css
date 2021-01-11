@@ -73,12 +73,6 @@ fieldset #birthday label.check span {
     display: block;
 }
 
-div#send {
-    width: 100%;
-    margin-bottom: 8px;
-    text-align: center;
-}
-
 .btn {
     margin-right: 8px;
     border-radius: 50%;
@@ -110,4 +104,30 @@ input[type="submit"] {
 .register {
     display: block;
     font-weight: bold;
+}
+
+.send, .top_send {
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: center;
+}
+.top_send {
+    margin: 0;
+    padding: 0;
+    margin-top: 8px;
+    margin-left: 8px;
+    text-align: left;
+}
+.top_send input[type="submit"] {
+    width: 120px;
+    font-size: 1.2rem;
+    margin: 0;
+    padding: 0;
+}
+
+#message {
+    margin-top: 0.5rem;
+    margin-left: 2rem;
+    font-size: 1.2em;
+    color: #000;
 }
