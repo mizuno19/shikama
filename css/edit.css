@@ -131,3 +131,7 @@ input[type="submit"] {
     font-size: 1.2em;
     color: #000;
 }
+
+.none {
+    font-size: 1.0rem;
+}
