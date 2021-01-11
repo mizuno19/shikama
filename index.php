@@ -9,7 +9,7 @@ if (empty($dbo)) die('Error: データベースに接続できません');
 // テーブル内の全データ数を取得
 $max = execute($dbo, "SELECT COUNT(*) AS データ数 FROM 顧客")->fetch(PDO::FETCH_ASSOC)["データ数"];
 $n = 0;     // スキップ数
-$m = 5;    // 取得数
+$m = 20;    // 取得数
 
 if (isset($_GET['NEXT']) && is_numeric($_GET['NEXT'])) {
     $n = $_GET['NEXT'];
