@@ -97,7 +97,7 @@ if (empty($res)) {
 ?>
     <div class="client">
         <label id="<?= $cnt ?>">
-        <div class="id"><input type="checkbox" name="id[]" value="<?= $id ?>"></div>
+        <div class="id"><input type="checkbox" name="ID[]" value="<?= $id ?>"></div>
         <div class="no"><span><?= ($cnt + 1) ?></span></div>
         <div class="name_box">
             <div class="kana"><?= $kana ?></div>
