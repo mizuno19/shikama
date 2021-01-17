@@ -2,23 +2,29 @@
 require_once 'config.php';
 require_once 'lib/dblib.php';
 
+$message = '';
 
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
-
-echo <<<"EOH"
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="css/base.css" type="text/css">
     <link rel="stylesheet" href="css/visit.css" type="text/css">
+    <title>来店情報登録</title>
 </head>
 <body>
-<h1>来店情報登録</h1>
-<hr>
-EOH;
-
+<div id="content">
+<header>
+    <h1>来店情報登録</h1>
+    <nav><ul>
+        <li><a href="./"><button>顧客一覧</button></a></li>
+    </ul></nav>
+</header>
+<section id="main">
+<?php
 // 顧客IDのチェック
 if (isset($_GET['ID'])) {
     $id = $_GET['ID'];
@@ -37,12 +43,21 @@ if (isset($_POST['SEND'])) {
         $forms[$key] = $value;
     }
     //確認用
-    echo "<hr>";
-    var_dump($forms);
-    echo "<hr>";
+    // echo "<hr>";
+    // var_dump($forms);
+    // echo "<hr>";
     $date = $forms["year"]."-".$forms["month"]."-".$forms["day"]." ".$forms["hour"].":".$forms["minute"].":"."00";
-    var_dump($date);
-    insert_visit($dbo, $forms["ID"], $date, $forms["NUMBER"], $forms["RELATION"], $forms["EATS"]);
+    // var_dump($date);
+    // 同じ日時のデータが連続して入力される時は登録をスキップ(更新ボタンを押した時の処理)
+    $sql = "SELECT COUNT(*) AS count FROM 来店記録 WHERE 顧客ID='" . $forms['ID'] . "' AND 日時='${date}'";
+    $res = execute($dbo, $sql);
+    $count = $res->fetch(PDO::FETCH_ASSOC)['count'];
+    if ($count > 0) {
+        $message = "重複登録のため登録をスキップしました。";
+    } else {
+        insert_visit($dbo, $forms["ID"], $date, $forms["NUMBER"], $forms["RELATION"], $forms["EATS"]);
+        $message = "登録完了しました。";
+    }
 }
 
 // 選択された顧客情報を取得
@@ -88,13 +103,15 @@ if (!$res) {
         echo '</p>';
         echo '</form>';
     } else {
-        echo "登録処理<br>";
-        echo '<a href="./">トップへ</a>';
+        if (!empty($message)) {
+            echo "<p class=\"message\">${message}</p>";
+        }
+        echo '<a href="./">顧客一覧へ</a>';
     }
 }
-
-
-echo <<<"EOH"
+$dbo = null;
+?>
+</selection>
 <script>
 var now = new Date();
 function getNow() {
@@ -112,8 +129,3 @@ function getNow() {
 </script>
 </body>
 </html>
-EOH;
-
-$dbo = null;
-
-?>
