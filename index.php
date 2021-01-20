@@ -55,7 +55,7 @@ if (isset($_GET['NEXT']) && is_numeric($_GET['NEXT'])) {
 <?php
     }
 ?>
-    <a href="?NEXT=<?= $max - $m ?>"><button type="button">&gt;&gt;</button></a>    
+    <a href="?NEXT=<?= $max - ($max %  $m) ?>"><button type="button">&gt;&gt;</button></a>    
     </p>
 </div>
 <section id="main">
