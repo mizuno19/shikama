@@ -1,0 +1,28 @@
+.del_client {
+    border-bottom: 1px solid #000;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding: 8px;
+}
+
+.kana {
+    font-size: 0.8em;
+}
+
+.name {
+    font-size: 1.2em;
+}
+
+.tel {
+    font-size: 1em;
+}
+
+.submit_btn {
+    margin: 1rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.submit_btn input[type="submit"] {
+    width: 12.0rem;
+}

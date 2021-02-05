@@ -6,6 +6,17 @@ require_once 'lib/dblib.php';
 $dbo = dbconnect($db_dsn);
 if (empty($dbo)) die('Error: データベースに接続できません');
 
+// IDの取得
+if (isset($_POST['ID']) && !empty($_POST['ID'])) {
+    $where_in = '';
+    foreach ($_POST['ID'] as $id) {
+        $where_in .= "'$id',";
+    }
+    $where_in = substr($where_in, 0, -1);   // 最後に付く「,」を削除
+    // IDを取得できたか確認
+    var_dump($where_in);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -16,8 +27,6 @@ if (empty($dbo)) die('Error: データベースに接続できません');
     <title>顧客情報削除</title>
 </head>
 <body>
-<form>
-<input type="hidden" name="ID[]" value="<?=$id?>">
 <div id="content">
 <header>
     <h1>顧客情報削除</h1>
@@ -26,41 +35,90 @@ if (empty($dbo)) die('Error: データベースに接続できません');
     </ul></nav>
 </header>
 <section id="main">
-<div id=ver>削除しますか？</div>
+
 <?php
-$id = $_POST['ID'][0];
-$csql = "SELECT 顧客ID, 姓, 名, セイ, メイ FROM 顧客 where '$id' = 顧客ID";
-$tsql = "SELECT 顧客ID,電話番号 FROM 電話番号 where '$id' = 顧客ID limit 1";
-$cres = execute($dbo, $csql);
-$tres = execute($dbo, $tsql);
-var_dump($cres);
-var_dump($tres);
-if (empty($id)) {
-    echo "<p>テーブルからデータを読み込めませんでした。</p>";
-} else {
-    // 結果が空でなければデータを配列で取得
-    $db_data = $cres->fetchAll(PDO::FETCH_ASSOC);
-var_dump($db_data);
-foreach ($db_data as $row) {
-    $name = $row['姓'] . "　" . $row['名'];
-    $kana = $row['セイ'] . "　" . $row['メイ'];
-    $db_data = $tres->fetchAll(PDO::FETCH_ASSOC);
-var_dump($db_data);
-foreach ($db_data as $row) {
-    $tel = $row['電話番号'];
-}
-}
-}
+    // 削除確認画面から飛んできた時の処理
+    if (isset($_POST['DELFIX'])) {    
+        // 削除処理
+        $csql = "DELETE FROM 顧客 WHERE 顧客ID IN (${where_in})";
+        $tsql = "DELETE FROM 電話番号 WHERE 顧客ID IN (${where_in})";
+        $bsql = "DELETE FROM 生年月日 WHERE 顧客ID IN (${where_in})";
+    // 顧客、電話番号、生年月日のそれぞれのテーブルから
+    // 削除する顧客の情報が消せるクエリになっているか確認
+    var_dump($csql);
+    var_dump($tsql);
+    var_dump($bsql);
+    // クエリの形が確認できるまでは実行しない
+        //$cres = execute($dbo, $csql);
+        //$tres = execute($dbo, $tsql);
+        //$bres = execute($dbo, $bsql);
+        //if (!$cres || !$tres || !$bres) {
+        //    $mess = '削除に失敗しました';
+        //}
+
+    // 顧客一覧から削除ボタンが押された時の処理
+    } else if (isset($_POST['DELETE']) && isset($_POST['ID']) && !empty($_POST['ID'])) {
+        // 削除確認
 ?>
-<div id=name>
-<p><?php echo $db_data[0]["セイ"]." ".$db_data[0]["メイ"] ?>　サマ</p>
-<p><?php echo $db_data[0]["姓"]." ".$db_data[0]["名"] ?>　様</p></div>
-<div id=kana></div>
-<div id=tel></div>
-<input type="submit" value="確定">
-</section>
+<div id="ver">削除しますか？</div>
+<?php
+    // 確認表示に使うため、条件に合う顧客の情報を取得
+    $csql = "SELECT 顧客ID, 姓, 名, セイ, メイ FROM 顧客 WHERE 顧客ID IN (${where_in}) ORDER BY 顧客ID";
+    $cres = execute($dbo, $csql);
+
+    // クエリの結果で処理を分ける
+    if (!$cres) {
+        echo "<p>顧客テーブルからデータを読み込めませんでした。</p>";
+    } else {
+        // 結果が空でなければデータを配列で取得
+        $db_data = $cres->fetchAll(PDO::FETCH_ASSOC);
+    }
+?>
+<form action="" method="POST">
+<?php
+    // データベースから取得したデータの表示
+    for ($i = 0; $i < count($db_data); $i++) {
+        $kana = $db_data[$i]['セイ'] . "　" . $db_data[$i]['メイ'];
+        $name = $db_data[$i]['姓'] . "　" . $db_data[$i]['名'];
+        $tel = '登録なし';
+        // 顧客の電話番号を1件だけ取得
+        $tsql = "SELECT 電話番号 FROM 電話番号 WHERE 顧客ID = '" . $db_data[$i]['顧客ID'] . "' LIMIT 1";
+        $tres = execute($dbo, $tsql);
+        // クエリが成功したかチェック
+        if (!$tres) {
+            echo "<p>電話番号テーブルからデータを読み込めませんでした。</p>";
+        } else {
+            // クエリが成功していたら電話番号を取得する
+            $db_tel = $tres->fetchAll(PDO::FETCH_ASSOC);
+            // 登録されていない場合があるのでチェック
+            if (!empty($db_tel[0]['電話番号'])) {
+                $tel = $db_tel[0]['電話番号'];
+            }
+        }
+?>
+<input type="hidden" name="ID[]" value="<?=$id?>">
+<div class="del_client">
+    <p class="kana"><?php echo $kana?>　サマ</p>
+    <p class="name"><?php echo $name ?>　様</p>
+    <p class="tel">連絡先: <?php echo $tel ?></p>
+</div>
+<?php
+    }
+?>
+<div class="submit_btn">
+    <input type="submit" name="DELFIX" value="確定">
 </div>
 </form>
+
+<?php
+    } else {
+        // 削除する顧客が選択されていない場合は顧客一覧へ
+        header('Location: ./');
+    }
+?>
+
+
+</section>
 </body>
 </html>
 <?php
