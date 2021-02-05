@@ -13,8 +13,6 @@ if (isset($_POST['ID']) && !empty($_POST['ID'])) {
         $where_in .= "'$id',";
     }
     $where_in = substr($where_in, 0, -1);   // 最後に付く「,」を削除
-    // IDを取得できたか確認
-    var_dump($where_in);
 }
 
 ?>
@@ -41,20 +39,22 @@ if (isset($_POST['ID']) && !empty($_POST['ID'])) {
     if (isset($_POST['DELFIX'])) {    
         // 削除処理
         $csql = "DELETE FROM 顧客 WHERE 顧客ID IN (${where_in})";
+        $rsql = "DELETE FROM 来店記録 WHERE 顧客ID IN (${where_in})";
         $tsql = "DELETE FROM 電話番号 WHERE 顧客ID IN (${where_in})";
         $bsql = "DELETE FROM 生年月日 WHERE 顧客ID IN (${where_in})";
     // 顧客、電話番号、生年月日のそれぞれのテーブルから
     // 削除する顧客の情報が消せるクエリになっているか確認
-    var_dump($csql);
-    var_dump($tsql);
-    var_dump($bsql);
     // クエリの形が確認できるまでは実行しない
-        //$cres = execute($dbo, $csql);
-        //$tres = execute($dbo, $tsql);
-        //$bres = execute($dbo, $bsql);
-        //if (!$cres || !$tres || !$bres) {
-        //    $mess = '削除に失敗しました';
-        //}
+        $tres = execute($dbo, $tsql);
+        $bres = execute($dbo, $bsql);
+        $rres = execute($dbo, $rsql);
+        $cres = execute($dbo, $csql);
+        if (!$cres || !$tres || !$bres || !$rres) {
+           $mess = '削除に失敗しました';
+        }else{
+            $mess = '削除しました';
+        }
+        echo $mess;
 
     // 顧客一覧から削除ボタンが押された時の処理
     } else if (isset($_POST['DELETE']) && isset($_POST['ID']) && !empty($_POST['ID'])) {
@@ -80,6 +80,7 @@ if (isset($_POST['ID']) && !empty($_POST['ID'])) {
     for ($i = 0; $i < count($db_data); $i++) {
         $kana = $db_data[$i]['セイ'] . "　" . $db_data[$i]['メイ'];
         $name = $db_data[$i]['姓'] . "　" . $db_data[$i]['名'];
+        $id = $db_data[$i]['顧客ID'];
         $tel = '登録なし';
         // 顧客の電話番号を1件だけ取得
         $tsql = "SELECT 電話番号 FROM 電話番号 WHERE 顧客ID = '" . $db_data[$i]['顧客ID'] . "' LIMIT 1";
