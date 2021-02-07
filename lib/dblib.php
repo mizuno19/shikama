@@ -1,5 +1,223 @@
 <?php
 
+// 全テーブル情報の表示
+function viewdb($dbo) {
+echo <<<"EOH"
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>DB確認</title>
+        <style type="text/css">
+        p {
+            font-size: 0.9em;
+            margin: 0;
+        }
+        </style>
+    </head>
+    <body>
+EOH;    
+    view_table($dbo, '連絡先区分');
+    echo '<hr>';
+    view_table($dbo, '顧客');
+    echo '<hr>';
+    view_table($dbo, '電話番号');
+    echo '<hr>';
+    view_table($dbo, '生年月日');
+    echo '<hr>';
+    view_table($dbo, '来店記録');
+    
+    echo '</body></html>';
+}
+
+// テーブル内容表示
+function view_table($dbo, $table) {
+    $sql = "SHOW COLUMNS FROM ${table}";
+    $res = $dbo->query($sql);
+    $ts = $res->fetchAll(PDO::FETCH_ASSOC);
+
+    echo '<table border="1">';
+    echo "<caption>${table}の構造</caption>";
+    echo '<tr>';
+    for ($i = 0; $i < $res->columnCount(); $i++) {
+        $meta = $res->getColumnMeta($i);
+        echo '<th>' . $meta['name'] . '</th>';
+    }
+    echo '</tr>';
+
+    foreach ($ts as $rows) {
+        echo '<tr>';
+        foreach ($rows as $v) {
+            echo '<td>' . $v . '</td>';
+        }
+        echo '</tr>';
+    }
+    echo '</table>';
+
+    $sql = "SELECT * FROM ${table}";
+    $res = $dbo->query($sql);
+    $data = $res->fetchAll(PDO::FETCH_ASSOC);
+
+    echo '<table border="1">';
+    echo "<caption>${table}</caption>";
+    echo '<tr>';
+    for ($i = 0; $i < $res->columnCount(); $i++) {
+        $meta = $res->getColumnMeta($i);
+        echo '<th>' . $meta['name'] . '</th>';
+    }
+    echo '</tr>';
+
+    foreach ($data as $rows) {
+        echo '<tr>';
+        foreach ($rows as $v) {
+            $v = str_replace(PHP_EOL, '[↩]', $v);
+            echo "<td>$v</td>";
+        }
+        echo '</tr>';
+    }
+    echo '</table>';
+}
+
+// データベースの初期化
+// $sample_flagがtrueの場合はサンプルデータを投入する
+function initdb($dbo, $sample_flag=false) {
+
+echo <<<"EOH"
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>DB初期化</title>
+        <style type="text/css">
+        p {
+            font-size: 0.9em;
+            margin: 0;
+        }
+        </style>
+    </head>
+    <body>
+EOH;
+
+    echo "<hr><p>テーブル削除</p><hr>";
+    drop_table($dbo, "電話番号");
+    drop_table($dbo, "連絡先区分");
+    drop_table($dbo, "生年月日");
+    drop_table($dbo, "来店記録");
+    drop_table($dbo, "顧客");
+
+    echo "<hr><p>テーブル作成</p><hr>";
+    $sql = "create table 顧客(
+        顧客ID char(7) not null,
+        姓 varchar(100),
+        名 varchar(100),
+        セイ varchar(100),
+        メイ varchar(100),
+        備考 text,
+        primary key(顧客ID));";
+    execute($dbo, $sql, true);
+
+    $sql = "create table 連絡先区分(
+        区分ID char(1) not null,
+        区分名 varchar(30) not null,
+        primary key(区分ID));";
+    execute($dbo, $sql, true);
+
+    $sql = "create table 電話番号(
+        顧客ID char(7) not null,
+        区分ID char(1) not null,
+        電話番号 varchar(11) not null,
+        primary key(顧客ID,区分ID),
+        foreign key (顧客ID) references 顧客(顧客ID),
+        foreign key (区分ID) references 連絡先区分(区分ID));";
+    execute($dbo, $sql, true);
+
+    $sql = "create table 生年月日(
+        顧客ID char(7) not null,
+        登録ID int not null,
+        生年月日 date ,
+        続柄 varchar(10),
+        primary key (顧客ID,登録ID),
+        foreign key (顧客ID) references 顧客(顧客ID));";
+    execute($dbo, $sql, true);
+
+    $sql = "create table 来店記録(
+        来店ID int auto_increment,
+        顧客ID char(7) not null,
+        日時 timestamp not null,
+        人数 int,
+        続柄 varchar(10),
+        メニュー text,
+        primary key (来店ID),
+        foreign key (顧客ID) references 顧客(顧客ID));";
+    execute($dbo, $sql, true);
+
+
+    echo "<hr><p>初期データ投入</p><hr>";
+    $sql = "insert into 連絡先区分 values
+        ('1','自宅')
+        , ('2','会社')
+        , ('3','本人')
+        , ('4','その他')";
+    execute($dbo, $sql, true);
+
+    if ($sample_flag) {
+        echo "<hr><p>サンプルデータ</p><hr>";
+        $sql = "insert into 顧客 values
+            ('2011121', '出江田', '入太郎', 'デエタ', 'イレタロウ', '好きなもの：肉　食べられないもの：牛');";
+        execute($dbo, $sql, true);
+        $sql = "insert into 電話番号 values
+            ('2011121', '1', '0123456789')
+            , ('2011121', '3', '08011112222');";
+        execute($dbo, $sql, true);
+        $sql = "insert into 生年月日 values
+            ('2011121', 1, '1978-01-01', '本人')
+            , ('2011121', 2, '1980-04-28', '妻');";
+        execute($dbo, $sql, true);
+
+        $sql = "insert into 顧客 values
+            ('2011131', '船橋', '太郎', 'フナバシ', 'タロウ', '好きなもの：おかめ納豆".PHP_EOL."嫌いなもの：ピーマン');";
+        execute($dbo, $sql, true);
+        $sql = "insert into 電話番号 values
+            ('2011131', '1', '08022223333');";
+        execute($dbo, $sql, true);
+        $sql = "insert into 生年月日 values
+            ('2011131', 1, '1978-01-01', '本人');";
+        execute($dbo, $sql, true);
+
+        $sql = "insert into 顧客 values
+            ('2011151', '津田', '沼夫', 'ツダ', 'ヌマオ', '好きなもの：ナス');";
+        execute($dbo, $sql, true);
+        $sql = "insert into 生年月日 values
+                ('2011151', 1, '1978-01-01', '本人')
+            , ('2011151', 2, '1980-07-01', '友人')
+            , ('2011151', 3, '1986-03-05', '友人')
+            , ('2011151', 4, '1986-10-05', '友人');";
+        execute($dbo, $sql, true);
+
+        $sql = "insert into 顧客 values
+            ('2011171', '稲毛', '浜', 'イナゲ', 'ハマ', 'アレルギー：乳製品');";
+        execute($dbo, $sql, true);
+        $sql = "insert into 電話番号 values
+            ('2011171', '1', '1234506789')
+            , ('2011171', '2', '9876543210')
+            , ('2011171', '3', '08033334444');";
+        execute($dbo, $sql, true);
+
+        $sql = "insert into 来店記録 values
+            (null, '2011131', '2020-11-01', 1, '本人', '白海老目光フリット、アワビ冬瓜'),
+            (null, '2011131', '2020-11-07', 2, '奥様', 'ラスプリ、メイン、カネロニフォワ'),
+            (null, '2011131', '2020-11-15', 2, 'お子様', 'アワビ冬瓜、スカンピグリル'),
+            (null, '2011131', '2020-11-30', 1, '本人', 'メイン、ピッツォケリ');
+            ";
+        execute($dbo, $sql, true);
+    }
+
+    echo "</body></html>";
+    // データベースを初期化したらそこで処理を止める
+    die();
+
+}
+
 // 来店情報インサート
 // $dbo: PDOインスタンス
 // $id: 顧客ID, $date: 来店日時
